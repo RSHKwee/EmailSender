@@ -3,13 +3,16 @@ package gui.panels;
 import models.AttachmentConfig;
 import models.EmailRecipient;
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.io.File;
 import java.util.List;
 
 public class AttachmentsPanel extends JPanel {
+  /**
+   * 
+   */
+  private static final long serialVersionUID = -1629708969233439007L;
+
   private AttachmentConfig attachmentConfig;
   private DefaultListModel<File> commonAttachmentsModel;
   private DefaultListModel<File> personalAttachmentsModel;

@@ -12,6 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EmailSenderGUI extends JFrame {
+  /**
+   * 
+   */
+  private static final long serialVersionUID = -1600749552354317771L;
   // Services
   private EmailService emailService;
   private EmlService emlService;

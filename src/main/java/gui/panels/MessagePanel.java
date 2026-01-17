@@ -8,6 +8,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class MessagePanel extends JPanel {
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 5487177925410915193L;
+
   private JTextField subjectField;
   private JTextArea messageArea;
   private JLabel charCountLabel;

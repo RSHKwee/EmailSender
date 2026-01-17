@@ -19,6 +19,10 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public class RecipientsPanel extends JPanel {
+  /**
+   * 
+   */
+  private static final long serialVersionUID = -8179423819004505461L;
   private JTextArea emailsArea;
   private JLabel countLabel, validLabel;
   private Consumer<List<EmailRecipient>> recipientsUpdateCallback;
