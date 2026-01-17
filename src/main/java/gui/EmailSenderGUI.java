@@ -29,7 +29,7 @@ public class EmailSenderGUI extends JFrame {
 
   public EmailSenderGUI() {
     setTitle("E-mail Verzender Pro");
-    setSize(1200, 850);
+    setSize(800, 650);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setLocationRelativeTo(null);
 
