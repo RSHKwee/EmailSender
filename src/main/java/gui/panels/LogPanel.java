@@ -64,4 +64,8 @@ public class LogPanel extends JPanel {
       }
     }
   }
+
+  public void clearLog() {
+    logArea.setText("");
+  }
 }

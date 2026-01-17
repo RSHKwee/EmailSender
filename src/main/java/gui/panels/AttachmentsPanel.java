@@ -239,4 +239,9 @@ public class AttachmentsPanel extends JPanel {
     }
     updateAttachmentInfo();
   }
+
+  public void clearAttachments() {
+    // TODO Auto-generated method stub
+
+  }
 }

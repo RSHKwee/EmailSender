@@ -8,8 +8,8 @@ import services.EmlService;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 public class EmailSenderGUI extends JFrame {
   // Services
@@ -24,6 +24,9 @@ public class EmailSenderGUI extends JFrame {
   private EmlStoragePanel emlStoragePanel;
   private LogPanel logPanel;
 
+  // Temporary storage for recipients until attachmentsPanel is initialized
+  private List<EmailRecipient> pendingRecipientsUpdate;
+
   public EmailSenderGUI() {
     setTitle("E-mail Verzender Pro");
     setSize(1200, 850);
@@ -35,16 +38,26 @@ public class EmailSenderGUI extends JFrame {
     emailService = new EmailService(logPanel::log);
     emlService = new EmlService(logPanel::log);
 
+    pendingRecipientsUpdate = new ArrayList<>();
+
     initComponents();
+
+    // Process any pending recipient updates
+    if (!pendingRecipientsUpdate.isEmpty()) {
+      attachmentsPanel.updateRecipientsList(pendingRecipientsUpdate);
+      pendingRecipientsUpdate.clear();
+    }
   }
 
   private void initComponents() {
-    // Create panels
+    // Create panels in correct order
     configPanel = new ConfigPanel();
-    recipientsPanel = new RecipientsPanel(this::onRecipientsUpdated);
     messagePanel = new MessagePanel();
     attachmentsPanel = new AttachmentsPanel();
     emlStoragePanel = new EmlStoragePanel();
+
+    // Create recipients panel last, with delayed callback
+    recipientsPanel = new RecipientsPanel(this::onRecipientsUpdated);
 
     // Main tabbed pane
     JTabbedPane tabbedPane = new JTabbedPane();
@@ -65,7 +78,12 @@ public class EmailSenderGUI extends JFrame {
   }
 
   private void onRecipientsUpdated(List<EmailRecipient> recipients) {
-    attachmentsPanel.updateRecipientsList(recipients);
+    // If attachmentsPanel is not yet initialized, store the update
+    if (attachmentsPanel == null) {
+      pendingRecipientsUpdate = new ArrayList<>(recipients);
+    } else {
+      attachmentsPanel.updateRecipientsList(recipients);
+    }
   }
 
   private JPanel createButtonPanel() {
@@ -100,6 +118,7 @@ public class EmailSenderGUI extends JFrame {
     return button;
   }
 
+  // ... rest van de methoden blijft hetzelfde ...
   private void sendEmails() {
     // Controleer configuratie
     if (!validateConfiguration()) {
@@ -128,6 +147,8 @@ public class EmailSenderGUI extends JFrame {
       @Override
       protected Void doInBackground() {
         AttachmentConfig attachmentConfig = attachmentsPanel.getAttachmentConfig();
+        int successCount = 0;
+        int failCount = 0;
 
         for (EmailRecipient recipient : recipients) {
           if (!recipient.isEnabled()) {
@@ -151,10 +172,14 @@ public class EmailSenderGUI extends JFrame {
                   personalizedMessage, attachments, emlStoragePanel.getSaveDirectory(), true);
             }
 
-            // Korte pauze
+            successCount++;
+            publish("✓ Verzonden naar: " + recipient.getEmail());
+
+            // Korte pauze om rate limiting te voorkomen
             Thread.sleep(1000);
 
           } catch (Exception e) {
+            failCount++;
             publish("✗ Fout bij " + recipient.getEmail() + ": " + e.getMessage());
 
             // Sla altijd EML op bij fout
@@ -164,6 +189,8 @@ public class EmailSenderGUI extends JFrame {
                 false);
           }
         }
+
+        publish("=== Verzending voltooid: " + successCount + " succes, " + failCount + " mislukt ===");
         return null;
       }
 
@@ -172,13 +199,6 @@ public class EmailSenderGUI extends JFrame {
         for (String message : chunks) {
           logPanel.log(message);
         }
-      }
-
-      @Override
-      protected void done() {
-        logPanel.log("=== Verzending voltooid ===");
-        JOptionPane.showMessageDialog(EmailSenderGUI.this, "Verzending voltooid!", "Succes",
-            JOptionPane.INFORMATION_MESSAGE);
       }
     };
 
@@ -209,6 +229,7 @@ public class EmailSenderGUI extends JFrame {
       protected Void doInBackground() {
         AttachmentConfig attachmentConfig = attachmentsPanel.getAttachmentConfig();
         int successCount = 0;
+        int failCount = 0;
 
         for (EmailRecipient recipient : recipients) {
           try {
@@ -222,14 +243,17 @@ public class EmailSenderGUI extends JFrame {
             if (savedFile != null) {
               successCount++;
               publish("✓ EML opgeslagen voor: " + recipient.getEmail());
+            } else {
+              failCount++;
             }
 
           } catch (Exception e) {
+            failCount++;
             publish("✗ Fout bij opslaan EML voor " + recipient.getEmail() + ": " + e.getMessage());
           }
         }
 
-        publish("=== EML opslag voltooid: " + successCount + "/" + recipients.size() + " succesvol ===");
+        publish("=== EML opslag voltooid: " + successCount + " succes, " + failCount + " mislukt ===");
         return null;
       }
 
@@ -289,19 +313,25 @@ public class EmailSenderGUI extends JFrame {
   }
 
   private String personalizeMessage(String template, EmailRecipient recipient) {
+    // Simple personalization - kan uitgebreid worden
     return template.replace("{naam}", recipient.getName()).replace("{email}", recipient.getEmail()).replace("{id}",
         recipient.getId());
   }
 
   private void clearAll() {
-    int confirm = JOptionPane.showConfirmDialog(this, "Alle ingevoerde gegevens wissen?", "Bevestiging",
-        JOptionPane.YES_NO_OPTION);
+    int confirm = JOptionPane.showConfirmDialog(this,
+        "Alle ingevoerde gegevens wissen?\n\n" + "Dit wist:\n" + "- Alle ontvangers\n" + "- Bericht en onderwerp\n"
+            + "- Alle bijlagen\n" + "- Log geschiedenis\n\n" + "Configuratie en EML instellingen blijven behouden.",
+        "Alles wissen - Bevestiging", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
     if (confirm == JOptionPane.YES_OPTION) {
-      // recipientsPanel.clearRecipients();
-      // messagePanel.clearMessage();
-      // attachmentsPanel.clearAttachments();
-      // logPanel.clearLog();
+      // Roep de nieuwe clear methoden aan
+      recipientsPanel.clearRecipients();
+      messagePanel.clearMessage();
+      attachmentsPanel.clearAttachments();
+      logPanel.clearLog();
+
+      logPanel.log("Alle gegevens gewist");
     }
   }
 
@@ -348,23 +378,4 @@ public class EmailSenderGUI extends JFrame {
     JOptionPane.showMessageDialog(this, scrollPane, "Help", JOptionPane.INFORMATION_MESSAGE);
   }
 
-  public static void main(String[] args) {
-    SwingUtilities.invokeLater(() -> {
-      try {
-        // Gebruik system look and feel
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-
-        // Optioneel: verbeter de UI
-        UIManager.put("TabbedPane.selected", new Color(66, 165, 245));
-        UIManager.put("TabbedPane.selectHighlight", new Color(66, 165, 245));
-
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-
-      // Toon de GUI
-      EmailSenderGUI gui = new EmailSenderGUI();
-      gui.setVisible(true);
-    });
-  }
 }
