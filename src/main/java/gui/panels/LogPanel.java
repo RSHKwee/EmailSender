@@ -1,11 +1,19 @@
 package gui.panels;
 
 import javax.swing.*;
+
+import kwee.library.swing.TextAreaHandler;
+import kwee.logger.MyLogger;
+
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class LogPanel extends JPanel {
   /**
@@ -13,6 +21,11 @@ public class LogPanel extends JPanel {
   */
   private static final long serialVersionUID = 1787781473202823348L;
   private JTextArea logArea;
+  private static final Logger LOGGER = MyLogger.getLogger();
+
+  private String m_LogDir = "c:/";
+  private boolean m_toDisk = false;
+  private Level m_Level = Level.INFO;
 
   public LogPanel() {
     initComponents();
@@ -25,6 +38,20 @@ public class LogPanel extends JPanel {
     logArea = new JTextArea(15, 60);
     logArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
     logArea.setEditable(false);
+
+    try {
+      MyLogger.setup(m_Level, m_LogDir, m_toDisk);
+    } catch (IOException es) {
+      LOGGER.log(Level.SEVERE, Class.class.getName() + ": " + es.toString());
+      es.printStackTrace();
+    }
+    Logger rootLogger = Logger.getLogger("");
+    for (Handler handler : rootLogger.getHandlers()) {
+      if (handler instanceof TextAreaHandler) {
+        TextAreaHandler textAreaHandler = (TextAreaHandler) handler;
+        logArea = textAreaHandler.getTextArea();
+      }
+    }
 
     add(new JScrollPane(logArea), BorderLayout.CENTER);
 
