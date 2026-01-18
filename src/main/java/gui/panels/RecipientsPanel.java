@@ -214,6 +214,15 @@ public class RecipientsPanel extends JPanel {
     }
   }
 
+  public void setRecipients(List<EmailRecipient> recipients) {
+    StringBuilder sb = new StringBuilder();
+    for (EmailRecipient recipient : recipients) {
+      sb.append(recipient.getEmail()).append("\n");
+    }
+    emailsArea.setText(sb.toString());
+    updateRecipients();
+  }
+
   public List<EmailRecipient> getRecipients() {
     return recipients;
   }

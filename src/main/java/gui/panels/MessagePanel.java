@@ -101,6 +101,12 @@ public class MessagePanel extends JPanel {
     charCountLabel.setForeground(count > 10000 ? Color.RED : Color.BLACK);
   }
 
+  public void setMessage(String subject, String body) {
+    subjectField.setText(subject);
+    messageArea.setText(body);
+    updateCharCount();
+  }
+
   // Getters
   public String getSubject() {
     return subjectField.getText();

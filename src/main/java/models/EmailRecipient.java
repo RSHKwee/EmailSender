@@ -7,6 +7,10 @@ public class EmailRecipient {
   private String email;
   private String id;
   private String name;
+  private String firstName;
+  private String lastName;
+  private String description;
+
   private List<String> personalAttachments;
   private boolean enabled;
 
@@ -49,6 +53,38 @@ public class EmailRecipient {
     return enabled;
   }
 
+  public String getFirstName() {
+    return firstName;
+  }
+
+  public String getLastName() {
+    return lastName;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public void setPersonalAttachments(List<String> personalAttachments) {
+    this.personalAttachments = personalAttachments;
+  }
+
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
   }
@@ -66,5 +102,13 @@ public class EmailRecipient {
   @Override
   public String toString() {
     return email + " (ID: " + id + ")";
+  }
+
+  public void setFirstName(String firstName) {
+    this.firstName = firstName;
+  }
+
+  public void setLastName(String lastName) {
+    this.lastName = lastName;
   }
 }

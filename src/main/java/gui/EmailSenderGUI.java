@@ -31,26 +31,144 @@ public class EmailSenderGUI extends JFrame {
   // Temporary storage for recipients until attachmentsPanel is initialized
   private List<EmailRecipient> pendingRecipientsUpdate;
 
+  // Nieuwe constructors
   public EmailSenderGUI() {
+    this(new ArrayList<>(), null, null, null);
+  }
+
+  public EmailSenderGUI(List<RecipientData> recipientData) {
+    this(recipientData, null, null, null);
+  }
+
+  public EmailSenderGUI(List<RecipientData> recipientData, SMTPConfig smtpConfig, MessageConfig messageConfig,
+      List<File> commonAttachments) {
+
     setTitle("E-mail Verzender Pro");
-    setSize(800, 650);
+    setSize(1200, 850);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setLocationRelativeTo(null);
 
-    // Initialize services with logging
+    // Initialize services
     logPanel = new LogPanel();
     emailService = new EmailService(logPanel::log);
     emlService = new EmlService(logPanel::log);
-
     pendingRecipientsUpdate = new ArrayList<>();
 
     initComponents();
 
-    // Process any pending recipient updates
-    if (!pendingRecipientsUpdate.isEmpty()) {
-      attachmentsPanel.updateRecipientsList(pendingRecipientsUpdate);
-      pendingRecipientsUpdate.clear();
+    // Configureer met parameters
+    if (smtpConfig != null) {
+      applySMTPConfig(smtpConfig);
     }
+
+    if (messageConfig != null) {
+      applyMessageConfig(messageConfig);
+    }
+
+    if (commonAttachments != null && !commonAttachments.isEmpty()) {
+      applyCommonAttachments(commonAttachments);
+    }
+
+    if (recipientData != null && !recipientData.isEmpty()) {
+      applyRecipientData(recipientData);
+    }
+
+    logPanel.log("GUI geladen met " + (recipientData != null ? recipientData.size() : 0) + " ontvangers");
+  }
+
+  // Data classes voor parameters
+  public static class RecipientData {
+    public String email;
+    public String firstName;
+    public String lastName;
+    public List<String> personalFilePaths; // Lijst met bestandspaden
+
+    public RecipientData(String email, String firstName, String lastName) {
+      this.email = email;
+      this.firstName = firstName;
+      this.lastName = lastName;
+      this.personalFilePaths = new ArrayList<>();
+    }
+
+    public RecipientData(String email, String firstName, String lastName, List<String> personalFilePaths) {
+      this.email = email;
+      this.firstName = firstName;
+      this.lastName = lastName;
+      this.personalFilePaths = personalFilePaths != null ? personalFilePaths : new ArrayList<>();
+    }
+  }
+
+  public static class SMTPConfig {
+    public String host;
+    public int port;
+    public String username;
+    public String password;
+
+    public SMTPConfig(String host, int port, String username, String password) {
+      this.host = host;
+      this.port = port;
+      this.username = username;
+      this.password = password;
+    }
+  }
+
+  public static class MessageConfig {
+    public String subject;
+    public String template;
+
+    public MessageConfig(String subject, String template) {
+      this.subject = subject;
+      this.template = template;
+    }
+  }
+
+  // Private helper methoden om configuratie toe te passen
+  private void applySMTPConfig(SMTPConfig config) {
+    configPanel.setSMTPConfig(config.host, config.port, config.username, config.password);
+  }
+
+  private void applyMessageConfig(MessageConfig config) {
+    messagePanel.setMessage(config.subject, config.template);
+  }
+
+  private void applyCommonAttachments(List<File> files) {
+    AttachmentConfig attachmentConfig = attachmentsPanel.getAttachmentConfig();
+    for (File file : files) {
+      if (file.exists()) {
+        attachmentConfig.addCommonAttachment(file);
+      }
+    }
+    attachmentsPanel.updateAttachmentInfo();
+  }
+
+  private void applyRecipientData(List<RecipientData> recipientData) {
+    List<EmailRecipient> recipients = new ArrayList<>();
+    AttachmentConfig attachmentConfig = attachmentsPanel.getAttachmentConfig();
+
+    for (RecipientData data : recipientData) {
+      // Maak EmailRecipient aan
+      EmailRecipient recipient = new EmailRecipient(data.email);
+      recipient.setFirstName(data.firstName);
+      recipient.setLastName(data.lastName);
+      recipients.add(recipient);
+
+      // Voeg persoonlijke bestanden toe
+      if (data.personalFilePaths != null && !data.personalFilePaths.isEmpty()) {
+        for (String filePath : data.personalFilePaths) {
+          File file = new File(filePath);
+          if (file.exists()) {
+            attachmentConfig.addPersonalAttachment(recipient.getId(), file);
+          } else {
+            logPanel.log("Waarschuwing: Bestand niet gevonden: " + filePath);
+          }
+        }
+      }
+    }
+
+    // Update GUI
+    recipientsPanel.setRecipients(recipients);
+    attachmentsPanel.updateRecipientsList(recipients);
+    attachmentsPanel.updateAttachmentInfo();
   }
 
   private void initComponents() {

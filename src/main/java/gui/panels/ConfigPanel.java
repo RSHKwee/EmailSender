@@ -88,6 +88,13 @@ public class ConfigPanel extends JPanel {
     }
   }
 
+  public void setSMTPConfig(String host, int port, String username, String password) {
+    smtpField.setText(host);
+    portField.setText(String.valueOf(port));
+    usernameField.setText(username);
+    passwordField.setText(password);
+  }
+
   // Getters
   public String getSmtpHost() {
     return smtpField.getText();
