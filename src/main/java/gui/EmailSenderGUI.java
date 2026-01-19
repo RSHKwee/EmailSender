@@ -1,21 +1,28 @@
 package gui;
 
 import gui.panels.*;
+import main.UserSetting;
+
 import models.AttachmentConfig;
 import models.EmailRecipient;
 import services.EmailService;
 import services.EmlService;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class EmailSenderGUI extends JFrame {
   /**
    * 
    */
   private static final long serialVersionUID = -1600749552354317771L;
+  private UserSetting m_params = UserSetting.getInstance();
+
   // Services
   private EmailService emailService;
   private EmlService emlService;
@@ -27,6 +34,8 @@ public class EmailSenderGUI extends JFrame {
   private AttachmentsPanel attachmentsPanel;
   private EmlStoragePanel emlStoragePanel;
   private LogPanel logPanel;
+
+  private List<EmailRecipient> admEmailRecipients = new ArrayList<EmailRecipient>();
 
   // Temporary storage for recipients until attachmentsPanel is initialized
   @SuppressWarnings("unused")
@@ -125,6 +134,8 @@ public class EmailSenderGUI extends JFrame {
       }
     }
 
+    admEmailRecipients.addAll(recipients);
+
     // Update GUI
     recipientsPanel.setRecipients(recipients);
     attachmentsPanel.updateRecipientsList(recipients);
@@ -177,7 +188,7 @@ public class EmailSenderGUI extends JFrame {
     JButton testBtn = createButton("🔌 Testen", new Color(245, 124, 0), e -> testConnection());
     JButton clearBtn = createButton("🧹 Wissen", new Color(158, 158, 158), e -> clearAll());
     JButton helpBtn = createButton("❓ Help", new Color(103, 58, 183), e -> showHelp());
-    JButton exitBtn = createButton("🚪 Afsluiten", new Color(198, 40, 40), e -> System.exit(0));
+    JButton exitBtn = createButton("🚪 Afsluiten", new Color(198, 40, 40), e -> dispose());
 
     panel.add(sendBtn);
     panel.add(saveBtn);
@@ -245,7 +256,8 @@ public class EmailSenderGUI extends JFrame {
             List<File> attachments = attachmentConfig.getAllAttachmentsForRecipient(recipient.getId());
 
             // Verzend e-mail
-            emailService.sendEmail(recipient.getEmail(), messagePanel.getSubject(), personalizedMessage, attachments);
+            emailService.sendEmail(recipient.getEmail(), personalizeMessage(messagePanel.getSubject(), recipient),
+                personalizedMessage, attachments);
 
             // Sla EML op indien gewenst
             if (emlStoragePanel.shouldSaveEml()) {
@@ -264,7 +276,8 @@ public class EmailSenderGUI extends JFrame {
             publish("✗ Fout bij " + recipient.getEmail() + ": " + e.getMessage());
 
             // Sla altijd EML op bij fout
-            emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(), messagePanel.getSubject(),
+            emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(),
+                personalizeMessage(messagePanel.getSubject(), recipient),
                 personalizeMessage(messagePanel.getMessage(), recipient),
                 attachmentConfig.getAllAttachmentsForRecipient(recipient.getId()), emlStoragePanel.getSaveDirectory(),
                 false);
@@ -312,14 +325,15 @@ public class EmailSenderGUI extends JFrame {
         int successCount = 0;
         int failCount = 0;
 
-        for (EmailRecipient recipient : recipients) {
+        for (EmailRecipient recipient : admEmailRecipients) {
           try {
             String personalizedMessage = personalizeMessage(messagePanel.getMessage(), recipient);
 
             List<File> attachments = attachmentConfig.getAllAttachmentsForRecipient(recipient.getId());
 
             File savedFile = emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(),
-                messagePanel.getSubject(), personalizedMessage, attachments, emlStoragePanel.getSaveDirectory(), true);
+                personalizeMessage(messagePanel.getSubject(), recipient), personalizedMessage, attachments,
+                emlStoragePanel.getSaveDirectory(), true);
 
             if (savedFile != null) {
               successCount++;
@@ -405,6 +419,12 @@ public class EmailSenderGUI extends JFrame {
 
     lstr = lstr.replace("{email}", recipient.getEmail());
     lstr = lstr.replace("{id}", recipient.getId());
+
+    // Current date and time, with custom format
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    LocalDateTime now = LocalDateTime.now();
+    lstr = lstr.replace("{datum}", now.format(formatter));
+
     return lstr;
   }
 

@@ -1,6 +1,9 @@
 package gui.panels;
 
 import javax.swing.*;
+
+import main.UserSetting;
+
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -10,6 +13,8 @@ public class EmlStoragePanel extends JPanel {
   * 
   */
   private static final long serialVersionUID = -6201832735110220981L;
+  private UserSetting m_params = UserSetting.getInstance();
+
   private JTextField directoryField;
   private JCheckBox saveEmlCheckbox;
 
@@ -26,7 +31,12 @@ public class EmlStoragePanel extends JPanel {
     dirPanel.add(new JLabel("Opslagmap:"), BorderLayout.NORTH);
 
     JPanel fieldPanel = new JPanel(new BorderLayout(5, 5));
-    directoryField = new JTextField(System.getProperty("user.home") + "/eml_storage");
+
+    String emlDir = m_params.get_EmlDirectory();
+    if (emlDir.isBlank()) {
+      emlDir = System.getProperty("user.home") + "/eml_storage";
+    }
+    directoryField = new JTextField(emlDir);
     JButton browseBtn = new JButton("Bladeren");
     browseBtn.addActionListener(e -> browseDirectory());
 
@@ -78,6 +88,8 @@ public class EmlStoragePanel extends JPanel {
     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
       directoryField.setText(chooser.getSelectedFile().getAbsolutePath());
+      m_params.set_EmlDirectory(chooser.getSelectedFile().getAbsolutePath());
+      m_params.save();
     }
   }
 
@@ -105,6 +117,10 @@ public class EmlStoragePanel extends JPanel {
         }
       }
     }
+  }
+
+  public void setStorage(String emlDir) {
+    directoryField.setText(emlDir);
   }
 
   // Getters
