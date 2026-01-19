@@ -1,23 +1,35 @@
 package models;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EmailRecipient {
   private String email;
   private String id;
-  private String name;
-  private String firstName;
-  private String lastName;
-  private String description;
+  private String voornaam;
+  private String achternaam;
 
-  private List<String> personalAttachments;
+  private String straat_huisnr = "";
+  private String postcode = "";
+  private String plaats = "";
+
+  private List<File> personalAttachments;
   private boolean enabled;
 
   public EmailRecipient(String email) {
     this.email = email;
     this.id = generateId(email);
-    this.name = extractNameFromEmail(email);
+    extractNameFromEmail(email);
+    this.personalAttachments = new ArrayList<>();
+    this.enabled = true;
+  }
+
+  public EmailRecipient(String email, String voornaam, String achternaam) {
+    this.email = email;
+    this.voornaam = voornaam;
+    this.achternaam = achternaam;
+    this.id = generateId(email);
     this.personalAttachments = new ArrayList<>();
     this.enabled = true;
   }
@@ -26,10 +38,17 @@ public class EmailRecipient {
     return email.replace("@", "_at_").replace(".", "_");
   }
 
-  private String extractNameFromEmail(String email) {
+  private void extractNameFromEmail(String email) {
     String namePart = email.split("@")[0];
     namePart = namePart.replace(".", " ").replace("_", " ");
-    return namePart.substring(0, 1).toUpperCase() + namePart.substring(1);
+    String[] parts = namePart.split(" ");
+    if (parts.length >= 2) {
+      this.voornaam = parts[0];
+      this.achternaam = parts[1];
+    } else {
+      this.voornaam = namePart;
+      this.achternaam = "";
+    }
   }
 
   // Getters and Setters
@@ -41,11 +60,31 @@ public class EmailRecipient {
     return id;
   }
 
-  public String getName() {
-    return name;
+  public String getVoornaam() {
+    return voornaam != null ? voornaam : "";
   }
 
-  public List<String> getPersonalAttachments() {
+  public String getAchternaam() {
+    return achternaam != null ? achternaam : "";
+  }
+
+  public String getNaam() {
+    return (voornaam != null ? voornaam + " " : "") + (achternaam != null ? achternaam : "");
+  }
+
+  public String getStraatHnr() {
+    return straat_huisnr != null ? straat_huisnr : "";
+  }
+
+  public String getPlaats() {
+    return plaats != null ? plaats : "";
+  }
+
+  public String getPostcode() {
+    return postcode != null ? postcode : "";
+  }
+
+  public List<File> getPersonalAttachments() {
     return personalAttachments;
   }
 
@@ -53,62 +92,42 @@ public class EmailRecipient {
     return enabled;
   }
 
-  public String getFirstName() {
-    return firstName;
+  public void setVoornaam(String voornaam) {
+    this.voornaam = voornaam;
   }
 
-  public String getLastName() {
-    return lastName;
+  public void setAchternaam(String achternaam) {
+    this.achternaam = achternaam;
   }
 
-  public String getDescription() {
-    return description;
+  public void setStraatHnr(String straatHnr) {
+    this.straat_huisnr = straatHnr;
   }
 
-  public void setEmail(String email) {
-    this.email = email;
+  public void setPlaats(String plaats) {
+    this.plaats = plaats;
   }
 
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-  public void setPersonalAttachments(List<String> personalAttachments) {
-    this.personalAttachments = personalAttachments;
+  public void setPostcode(String postcode) {
+    this.postcode = postcode;
   }
 
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
   }
 
-  public void addPersonalAttachment(String filePath) {
+  public void addPersonalAttachment(File filePath) {
     if (!personalAttachments.contains(filePath)) {
       personalAttachments.add(filePath);
     }
   }
 
-  public void removePersonalAttachment(String filePath) {
+  public void removePersonalAttachment(File filePath) {
     personalAttachments.remove(filePath);
   }
 
   @Override
   public String toString() {
-    return email + " (ID: " + id + ")";
-  }
-
-  public void setFirstName(String firstName) {
-    this.firstName = firstName;
-  }
-
-  public void setLastName(String lastName) {
-    this.lastName = lastName;
+    return email + (voornaam != null ? " (" + voornaam + " " + achternaam + ")" : "");
   }
 }

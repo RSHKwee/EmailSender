@@ -29,6 +29,7 @@ public class EmailSenderGUI extends JFrame {
   private LogPanel logPanel;
 
   // Temporary storage for recipients until attachmentsPanel is initialized
+  @SuppressWarnings("unused")
   private List<EmailRecipient> pendingRecipientsUpdate;
 
   // Nieuwe constructors
@@ -44,7 +45,7 @@ public class EmailSenderGUI extends JFrame {
       List<File> commonAttachments) {
 
     setTitle("E-mail Verzender Pro");
-    setSize(1200, 850);
+    setSize(800, 450);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setLocationRelativeTo(null);
 
@@ -55,6 +56,9 @@ public class EmailSenderGUI extends JFrame {
     pendingRecipientsUpdate = new ArrayList<>();
 
     initComponents();
+
+    // Gebruik DISPOSE_ON_CLOSE in plaats van EXIT_ON_CLOSE
+    setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
     // Configureer met parameters
     if (smtpConfig != null) {
@@ -74,52 +78,6 @@ public class EmailSenderGUI extends JFrame {
     }
 
     logPanel.log("GUI geladen met " + (recipientData != null ? recipientData.size() : 0) + " ontvangers");
-  }
-
-  // Data classes voor parameters
-  public static class RecipientData {
-    public String email;
-    public String firstName;
-    public String lastName;
-    public List<String> personalFilePaths; // Lijst met bestandspaden
-
-    public RecipientData(String email, String firstName, String lastName) {
-      this.email = email;
-      this.firstName = firstName;
-      this.lastName = lastName;
-      this.personalFilePaths = new ArrayList<>();
-    }
-
-    public RecipientData(String email, String firstName, String lastName, List<String> personalFilePaths) {
-      this.email = email;
-      this.firstName = firstName;
-      this.lastName = lastName;
-      this.personalFilePaths = personalFilePaths != null ? personalFilePaths : new ArrayList<>();
-    }
-  }
-
-  public static class SMTPConfig {
-    public String host;
-    public int port;
-    public String username;
-    public String password;
-
-    public SMTPConfig(String host, int port, String username, String password) {
-      this.host = host;
-      this.port = port;
-      this.username = username;
-      this.password = password;
-    }
-  }
-
-  public static class MessageConfig {
-    public String subject;
-    public String template;
-
-    public MessageConfig(String subject, String template) {
-      this.subject = subject;
-      this.template = template;
-    }
   }
 
   // Private helper methoden om configuratie toe te passen
@@ -148,16 +106,18 @@ public class EmailSenderGUI extends JFrame {
     for (RecipientData data : recipientData) {
       // Maak EmailRecipient aan
       EmailRecipient recipient = new EmailRecipient(data.email);
-      recipient.setFirstName(data.firstName);
-      recipient.setLastName(data.lastName);
+      recipient.setVoornaam(data.firstName);
+      recipient.setAchternaam(data.lastName);
+      recipient.setStraatHnr(data.street_housenr);
+      recipient.setPostcode(data.zipcode);
+      recipient.setPlaats(data.city);
       recipients.add(recipient);
 
       // Voeg persoonlijke bestanden toe
       if (data.personalFilePaths != null && !data.personalFilePaths.isEmpty()) {
-        for (String filePath : data.personalFilePaths) {
-          File file = new File(filePath);
-          if (file.exists()) {
-            attachmentConfig.addPersonalAttachment(recipient.getId(), file);
+        for (File filePath : data.personalFilePaths) {
+          if (filePath.exists()) {
+            attachmentConfig.addPersonalAttachment(recipient.getId(), filePath);
           } else {
             logPanel.log("Waarschuwing: Bestand niet gevonden: " + filePath);
           }
@@ -232,7 +192,7 @@ public class EmailSenderGUI extends JFrame {
   private JButton createButton(String text, Color color, java.awt.event.ActionListener action) {
     JButton button = new JButton(text);
     button.setBackground(color);
-    button.setForeground(Color.WHITE);
+    button.setForeground(Color.BLACK);
     button.setFont(new Font("Arial", Font.BOLD, 12));
     button.setFocusPainted(false);
     button.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
@@ -240,7 +200,6 @@ public class EmailSenderGUI extends JFrame {
     return button;
   }
 
-  // ... rest van de methoden blijft hetzelfde ...
   private void sendEmails() {
     // Controleer configuratie
     if (!validateConfiguration()) {
@@ -434,10 +393,19 @@ public class EmailSenderGUI extends JFrame {
     return true;
   }
 
+  // TODO
   private String personalizeMessage(String template, EmailRecipient recipient) {
     // Simple personalization - kan uitgebreid worden
-    return template.replace("{naam}", recipient.getName()).replace("{email}", recipient.getEmail()).replace("{id}",
-        recipient.getId());
+
+    String lstr = template.replace("{naam}", recipient.getNaam());
+    lstr = lstr.replace("{voornaam}", recipient.getVoornaam());
+    lstr = lstr.replace("{straat_nr}", recipient.getStraatHnr());
+    lstr = lstr.replace("{postcode}", recipient.getPostcode());
+    lstr = lstr.replace("{plaats}", recipient.getPlaats());
+
+    lstr = lstr.replace("{email}", recipient.getEmail());
+    lstr = lstr.replace("{id}", recipient.getId());
+    return lstr;
   }
 
   private void clearAll() {
@@ -498,6 +466,69 @@ public class EmailSenderGUI extends JFrame {
     scrollPane.setPreferredSize(new Dimension(600, 400));
 
     JOptionPane.showMessageDialog(this, scrollPane, "Help", JOptionPane.INFORMATION_MESSAGE);
+  }
+
+  // Data classes voor parameters
+  public static class RecipientData {
+    public String email;
+    public String firstName;
+    public String lastName;
+
+    public String street_housenr = "";
+    public String zipcode = "";
+    public String city = "";
+
+    public List<File> personalFilePaths; // Lijst met bestandspaden
+
+    public RecipientData(String email, String firstName, String lastName) {
+      this.email = email;
+      this.firstName = firstName;
+      this.lastName = lastName;
+      this.personalFilePaths = new ArrayList<>();
+    }
+
+    public RecipientData(String email, String firstName, String lastName, List<File> personalFilePaths) {
+      this.email = email;
+      this.firstName = firstName;
+      this.lastName = lastName;
+      this.personalFilePaths = personalFilePaths != null ? personalFilePaths : new ArrayList<>();
+    }
+
+    public RecipientData(String email, String firstName, String lastName, List<File> personalFilePaths,
+        String a_street_housenr, String a_zipcode, String a_city) {
+      this.email = email;
+      this.firstName = firstName;
+      this.lastName = lastName;
+      this.personalFilePaths = personalFilePaths != null ? personalFilePaths : new ArrayList<>();
+
+      this.street_housenr = a_street_housenr;
+      this.zipcode = a_zipcode;
+      this.city = a_city;
+    }
+  }
+
+  public static class SMTPConfig {
+    public String host;
+    public int port;
+    public String username;
+    public String password;
+
+    public SMTPConfig(String host, int port, String username, String password) {
+      this.host = host;
+      this.port = port;
+      this.username = username;
+      this.password = password;
+    }
+  }
+
+  public static class MessageConfig {
+    public String subject;
+    public String template;
+
+    public MessageConfig(String subject, String template) {
+      this.subject = subject;
+      this.template = template;
+    }
   }
 
 }
