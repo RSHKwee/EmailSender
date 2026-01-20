@@ -3,15 +3,25 @@ package gui.panels;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
+import kwee.logger.MyLogger;
+import main.UserSetting;
+
 import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MessagePanel extends JPanel {
+  private static final Logger LOGGER = MyLogger.getLogger();
   /**
    * 
    */
   private static final long serialVersionUID = 5487177925410915193L;
+  private UserSetting m_params = UserSetting.getInstance();
 
   private JTextField subjectField;
   private JTextArea messageArea;
@@ -30,7 +40,11 @@ public class MessagePanel extends JPanel {
     subjectPanel.add(new JLabel("Onderwerp:"), BorderLayout.WEST);
 
     subjectField = new JTextField(40);
-    subjectField.setText("Belangrijke update - " + new SimpleDateFormat("dd-MM-yyyy").format(new Date()));
+    String subject = "Belangrijke update - " + new SimpleDateFormat("dd-MM-yyyy").format(new Date());
+    if (!m_params.get_Subject().isBlank()) {
+      subject = m_params.get_Subject();
+    }
+    subjectField.setText(subject);
 
     subjectPanel.add(subjectField, BorderLayout.CENTER);
     add(subjectPanel, BorderLayout.NORTH);
@@ -46,9 +60,26 @@ public class MessagePanel extends JPanel {
 
     String template = "Beste {naam},\n\n" + "Hierbij ontvangt u onze update.\n\n" + "Met vriendelijke groet,\n"
         + "Het Team\n\n" + "Datum: {datum}\n" + "E-mail: {email}";
-
+    if (!m_params.get_Message().isBlank()) {
+      template = m_params.get_Message();
+    }
     messageArea.setText(template);
+    messageArea.addFocusListener(new FocusAdapter() {
+      @Override
+      public void focusLost(FocusEvent e) {
+        // Wordt aangeroepen wanneer het textarea focus verliest
+        m_params.set_Message(messageArea.getText());
+        m_params.set_Subject(subjectField.getText());
+        m_params.save();
+        LOGGER.log(Level.FINE, "Textarea heeft focus verlaten");
+      }
 
+      @Override
+      public void focusGained(FocusEvent e) {
+        // Wordt aangeroepen wanneer het textarea focus krijgt
+        LOGGER.log(Level.FINE, "Textarea heeft focus gekregen");
+      }
+    });
     JScrollPane scrollPane = new JScrollPane(messageArea);
     messagePanel.add(scrollPane, BorderLayout.CENTER);
 
@@ -67,7 +98,6 @@ public class MessagePanel extends JPanel {
       btn.addActionListener(e -> messageArea.insert(var, messageArea.getCaretPosition()));
       personalPanel.add(btn);
     }
-
     bottomPanel.add(personalPanel, BorderLayout.WEST);
 
     // Character count
@@ -88,7 +118,6 @@ public class MessagePanel extends JPanel {
         updateCharCount();
       }
     });
-
     bottomPanel.add(charCountLabel, BorderLayout.EAST);
     add(bottomPanel, BorderLayout.SOUTH);
 
@@ -109,15 +138,16 @@ public class MessagePanel extends JPanel {
 
   // Getters
   public String getSubject() {
-    return subjectField.getText();
+    String subject = subjectField.getText();
+    return subject;
   }
 
   public String getMessage() {
-    return messageArea.getText();
+    String message = messageArea.getText();
+    return message;
   }
 
   public void clearMessage() {
     // TODO Auto-generated method stub
-
   }
 }

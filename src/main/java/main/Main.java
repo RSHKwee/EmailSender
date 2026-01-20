@@ -8,6 +8,8 @@ import javax.swing.UIManager;
 import gui.EmailSenderGUI;
 
 public class Main {
+  private UserSetting m_params = UserSetting.getInstance();
+
   public static void main(String[] args) {
     SwingUtilities.invokeLater(() -> {
       try {

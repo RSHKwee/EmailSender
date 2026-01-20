@@ -10,6 +10,8 @@ import services.EmlService;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,11 +69,24 @@ public class EmailSenderGUI extends JFrame {
     initComponents();
 
     // Gebruik DISPOSE_ON_CLOSE in plaats van EXIT_ON_CLOSE
-    setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    // setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+    this.addWindowListener(new WindowAdapter() {
+      @Override
+      public void windowClosing(WindowEvent e) {
+        // Je actie hier
+        m_params.save();
+        EmailSenderGUI.this.dispose();
+      }
+    });
 
     // Configureer met parameters
     if (smtpConfig != null) {
       applySMTPConfig(smtpConfig);
+    }
+
+    if (recipientData != null && !recipientData.isEmpty()) {
+      applyRecipientData(recipientData);
     }
 
     if (messageConfig != null) {
@@ -80,10 +95,6 @@ public class EmailSenderGUI extends JFrame {
 
     if (commonAttachments != null && !commonAttachments.isEmpty()) {
       applyCommonAttachments(commonAttachments);
-    }
-
-    if (recipientData != null && !recipientData.isEmpty()) {
-      applyRecipientData(recipientData);
     }
 
     logPanel.log("GUI geladen met " + (recipientData != null ? recipientData.size() : 0) + " ontvangers");
@@ -300,6 +311,7 @@ public class EmailSenderGUI extends JFrame {
   }
 
   private void saveAsEml() {
+    m_params.save();
     if (!validateConfiguration()) {
       return;
     }
@@ -407,12 +419,12 @@ public class EmailSenderGUI extends JFrame {
     return true;
   }
 
-  // TODO
   private String personalizeMessage(String template, EmailRecipient recipient) {
     // Simple personalization - kan uitgebreid worden
 
     String lstr = template.replace("{naam}", recipient.getNaam());
     lstr = lstr.replace("{voornaam}", recipient.getVoornaam());
+    lstr = lstr.replace("{achternaam}", recipient.getAchternaam());
     lstr = lstr.replace("{straat_nr}", recipient.getStraatHnr());
     lstr = lstr.replace("{postcode}", recipient.getPostcode());
     lstr = lstr.replace("{plaats}", recipient.getPlaats());
@@ -430,8 +442,10 @@ public class EmailSenderGUI extends JFrame {
 
   private void clearAll() {
     int confirm = JOptionPane.showConfirmDialog(this,
+
         "Alle ingevoerde gegevens wissen?\n\n" + "Dit wist:\n" + "- Alle ontvangers\n" + "- Bericht en onderwerp\n"
             + "- Alle bijlagen\n" + "- Log geschiedenis\n\n" + "Configuratie en EML instellingen blijven behouden.",
+
         "Alles wissen - Bevestiging", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
     if (confirm == JOptionPane.YES_OPTION) {
@@ -488,7 +502,8 @@ public class EmailSenderGUI extends JFrame {
     JOptionPane.showMessageDialog(this, scrollPane, "Help", JOptionPane.INFORMATION_MESSAGE);
   }
 
-  // Data classes voor parameters
+  // ===================================================
+  // Data classes for parameters
   public static class RecipientData {
     public String email;
     public String firstName;

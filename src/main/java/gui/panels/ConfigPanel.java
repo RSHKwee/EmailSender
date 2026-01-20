@@ -1,13 +1,19 @@
 package gui.panels;
 
 import javax.swing.*;
+
+import kwee.logger.MyLogger;
+
 import java.awt.*;
+import java.util.logging.Logger;
 
 public class ConfigPanel extends JPanel {
   /**
   * 
   */
   private static final long serialVersionUID = 6238324373086768935L;
+  private static final Logger LOGGER = MyLogger.getLogger();
+
   private JTextField smtpField;
   private JTextField portField;
   private JTextField usernameField;

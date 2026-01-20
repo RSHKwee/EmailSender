@@ -31,6 +31,8 @@ public class UserSetting {
   private String c_Language = "Language";
 
   private String c_EmlDirectory = "EML_Directory";
+  private String c_Subject = "Subject";
+  private String c_Message = "Message";
 
   private String m_Level = c_LevelValue;
   private String m_LookAndFeel;
@@ -40,6 +42,8 @@ public class UserSetting {
   private boolean m_toDisk = false;
 
   private String m_EmlDirectory = "";
+  private String m_Subject = "";
+  private String m_Message = "";
 
   private Preferences pref;
   private Preferences userPrefs = Preferences.userRoot();
@@ -76,7 +80,8 @@ public class UserSetting {
     m_LogDir = pref.get(c_LogDir, "");
 
     m_EmlDirectory = pref.get(c_EmlDirectory, "");
-
+    m_Subject = pref.get(c_Subject, "");
+    m_Message = pref.get(c_Message, "");
   }
 
   // Getters for all parameters
@@ -108,7 +113,22 @@ public class UserSetting {
     return m_EmlDirectory;
   }
 
+  public String get_Subject() {
+    return m_Subject;
+  }
+
+  public String get_Message() {
+    return m_Message;
+  }
+
   // Setters for all parameters.
+  public void set_Subject(String m_Subject) {
+    this.m_Subject = m_Subject;
+  }
+
+  public void set_Message(String m_Message) {
+    this.m_Message = m_Message;
+  }
 
   public void set_LogDir(String m_LogDir) {
     this.m_LogDir = m_LogDir;
@@ -156,6 +176,8 @@ public class UserSetting {
       pref.put(c_LogDir, m_LogDir);
 
       pref.put(c_EmlDirectory, m_EmlDirectory);
+      pref.put(c_Subject, m_Subject);
+      pref.put(c_Message, m_Message);
 
       pref.flush();
     } catch (BackingStoreException e) {
@@ -180,6 +202,8 @@ public class UserSetting {
       freezeInstance.set_LogDir(m_LogDir);
 
       freezeInstance.set_EmlDirectory(m_EmlDirectory);
+      freezeInstance.set_Message(m_Message);
+      freezeInstance.set_Subject(m_Subject);
 
     } else {
       LOGGER.log(Level.INFO, "Nothing to freeze....");
@@ -197,6 +221,8 @@ public class UserSetting {
       uniqueInstance.set_LogDir(freezeInstance.get_LogDir());
 
       uniqueInstance.set_EmlDirectory(freezeInstance.get_EmlDirectory());
+      uniqueInstance.set_Subject(freezeInstance.get_Subject());
+      uniqueInstance.set_Message(freezeInstance.get_Message());
 
       freezeInstance = null;
     } else {
@@ -219,6 +245,10 @@ public class UserSetting {
     l_line = l_line + c_LookAndFeel + ": " + m_LookAndFeel + "\n";
     l_line = l_line + c_Level + ": " + m_Level + "\n";
     l_line = l_line + c_LogDir + ": " + m_LogDir + "\n";
+
+    l_line = l_line + c_EmlDirectory + ": " + m_EmlDirectory + "\n";
+    l_line = l_line + c_Subject + ": " + m_Subject + "\n";
+    l_line = l_line + c_Message + ": " + m_Message + "\n";
 
     return l_line;
   }
