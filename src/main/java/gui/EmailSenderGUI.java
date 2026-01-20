@@ -197,14 +197,15 @@ public class EmailSenderGUI extends JFrame {
     JButton sendBtn = createButton("📤 Verzenden", new Color(46, 125, 50), e -> sendEmails());
     JButton saveBtn = createButton("💾 Opslaan EML", new Color(21, 101, 192), e -> saveAsEml());
     JButton testBtn = createButton("🔌 Testen", new Color(245, 124, 0), e -> testConnection());
-    JButton clearBtn = createButton("🧹 Wissen", new Color(158, 158, 158), e -> clearAll());
+    // JButton clearBtn = createButton("🧹 Wissen", new Color(158, 158, 158), e ->
+    // clearAll());
     JButton helpBtn = createButton("❓ Help", new Color(103, 58, 183), e -> showHelp());
     JButton exitBtn = createButton("🚪 Afsluiten", new Color(198, 40, 40), e -> dispose());
 
     panel.add(sendBtn);
     panel.add(saveBtn);
     panel.add(testBtn);
-    panel.add(clearBtn);
+//    panel.add(clearBtn);
     panel.add(helpBtn);
     panel.add(exitBtn);
 
