@@ -420,6 +420,7 @@ public class EmailSenderGUI extends JFrame {
     return true;
   }
 
+//TODO
   private String personalizeMessage(String template, EmailRecipient recipient) {
     // Simple personalization - kan uitgebreid worden
 
