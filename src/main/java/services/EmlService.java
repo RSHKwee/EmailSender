@@ -1,12 +1,8 @@
 package services;
 
 import jakarta.mail.Session;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeBodyPart;
+
 import jakarta.mail.internet.MimeMessage;
-import jakarta.mail.internet.MimeMultipart;
-import jakarta.activation.DataHandler;
-import jakarta.activation.FileDataSource;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
@@ -22,8 +18,22 @@ public class EmlService {
     this.logger = logger;
   }
 
-  public File saveAsEml(String from, String to, String subject, String message, List<File> attachments, String saveDir,
-      boolean success) {
+  /**
+   * 
+   * @param from
+   * @param to
+   * @param cc
+   * @param replyTo
+   * @param alias
+   * @param subject
+   * @param message
+   * @param attachments
+   * @param saveDir
+   * @param success
+   * @return
+   */
+  public File saveAsEml(String from, String to, String cc, String replyTo, String alias, String subject, String message,
+      List<File> attachments, String saveDir, boolean success, boolean btimstamp) {
 
     File emlFile = null;
     try {
@@ -37,7 +47,10 @@ public class EmlService {
       }
 
       // Genereer bestandsnaam
-      String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+      String timestamp = "";
+      if (btimstamp) {
+        timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+      }
       String status = success ? "success" : "failed";
       String safeTo = to.replace("@", "_at_").replace(".", "_");
       String filename = String.format("email_%s_%s_%s.eml", safeTo, timestamp, status);
@@ -46,41 +59,9 @@ public class EmlService {
 
       // Maak een nieuwe mail sessie
       Session session = Session.getInstance(new Properties());
-      MimeMessage mimeMessage = new MimeMessage(session);
 
-      // Stel headers in
-      mimeMessage.setFrom(new InternetAddress(from));
-      mimeMessage.setRecipient(jakarta.mail.Message.RecipientType.TO, new InternetAddress(to));
-      mimeMessage.setSubject(subject);
-      mimeMessage.setSentDate(new Date());
-
-      if (attachments == null || attachments.isEmpty()) {
-        // Zonder bijlagen
-        mimeMessage.setText(message, "utf-8");
-      } else {
-        // Met bijlagen
-        MimeMultipart multipart = new MimeMultipart();
-
-        // Tekst deel
-        MimeBodyPart textPart = new MimeBodyPart();
-        textPart.setText(message, "utf-8");
-        multipart.addBodyPart(textPart);
-
-        // Bijlagen
-        for (File file : attachments) {
-          if (file.exists() && file.canRead()) {
-            MimeBodyPart attachmentPart = new MimeBodyPart();
-            FileDataSource source = new FileDataSource(file);
-            attachmentPart.setDataHandler(new DataHandler(source));
-            attachmentPart.setFileName(file.getName());
-            multipart.addBodyPart(attachmentPart);
-          } else {
-            logger.accept("Waarschuwing: Bestand niet gevonden voor EML: " + file.getPath());
-          }
-        }
-
-        mimeMessage.setContent(multipart);
-      }
+      MimeMessage mimeMessage = CreateMailMessage.createMail(session, from, to, cc, replyTo, subject, message,
+          attachments, alias);
 
       // Schrijf naar bestand
       try (FileOutputStream fos = new FileOutputStream(emlFile)) {
@@ -95,9 +76,22 @@ public class EmlService {
     }
   }
 
-  public void saveBatchAsEml(String from, List<String> recipients, String subject, String messageTemplate,
-      List<File> commonAttachments, java.util.function.Function<String, List<File>> personalAttachmentsProvider,
-      String saveDir) {
+  /**
+   * 
+   * @param from
+   * @param recipients
+   * @param cc
+   * @param replyTo
+   * @param alias
+   * @param subject
+   * @param messageTemplate
+   * @param commonAttachments
+   * @param personalAttachmentsProvider
+   * @param saveDir
+   */
+  public void saveBatchAsEml(String from, List<String> recipients, String cc, String replyTo, String alias,
+      String subject, String messageTemplate, List<File> commonAttachments,
+      java.util.function.Function<String, List<File>> personalAttachmentsProvider, String saveDir, boolean btimstamp) {
 
     logger.accept("Batch EML opslag gestart voor " + recipients.size() + " ontvangers");
     int successCount = 0;
@@ -118,7 +112,8 @@ public class EmlService {
         String personalizedMessage = personalizeMessage(messageTemplate, recipient);
 
         // Sla op als EML
-        File savedFile = saveAsEml(from, recipient, subject, personalizedMessage, allAttachments, saveDir, true);
+        File savedFile = saveAsEml(from, recipient, cc, replyTo, alias, subject, personalizedMessage, allAttachments,
+            saveDir, true, btimstamp);
 
         if (savedFile != null) {
           successCount++;

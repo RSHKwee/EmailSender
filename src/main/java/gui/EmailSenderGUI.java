@@ -39,23 +39,34 @@ public class EmailSenderGUI extends JFrame {
 
   private List<EmailRecipient> admEmailRecipients = new ArrayList<EmailRecipient>();
 
+  // TODO
+  private String cc = "hoevelaken.duurzaam@proton.me";
+  private String replyTo = "hoevelaken.duurzaam@proton.me";
+  private String alias = "Hoevelaken Duurzaam";
+  private boolean btimstamp = false;
+
   // Temporary storage for recipients until attachmentsPanel is initialized
   @SuppressWarnings("unused")
   private List<EmailRecipient> pendingRecipientsUpdate;
 
   // Nieuwe constructors
   public EmailSenderGUI() {
-    this(new ArrayList<>(), null, null, null);
+    this("", new ArrayList<>(), null, null, null);
   }
 
   public EmailSenderGUI(List<RecipientData> recipientData) {
-    this(recipientData, null, null, null);
+    this("", recipientData, null, null, null);
   }
 
-  public EmailSenderGUI(List<RecipientData> recipientData, SMTPConfig smtpConfig, MessageConfig messageConfig,
-      List<File> commonAttachments) {
+  public EmailSenderGUI(String a_title, List<RecipientData> recipientData, SMTPConfig smtpConfig,
+      MessageConfig messageConfig, List<File> commonAttachments) {
 
-    setTitle("E-mail Verzender Pro");
+    if (a_title.isBlank()) {
+      setTitle("E-mail Verzender Pro");
+    } else {
+      setTitle("E-mail Verzender Pro, " + a_title);
+    }
+
     setSize(800, 450);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setLocationRelativeTo(null);
@@ -268,13 +279,14 @@ public class EmailSenderGUI extends JFrame {
             List<File> attachments = attachmentConfig.getAllAttachmentsForRecipient(recipient.getId());
 
             // Verzend e-mail
-            emailService.sendEmail(recipient.getEmail(), personalizeMessage(messagePanel.getSubject(), recipient),
-                personalizedMessage, attachments);
+            emailService.sendEmail(recipient.getEmail(), cc, replyTo, alias,
+                personalizeMessage(messagePanel.getSubject(), recipient), personalizedMessage, attachments);
 
             // Sla EML op indien gewenst
             if (emlStoragePanel.shouldSaveEml()) {
-              emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(), messagePanel.getSubject(),
-                  personalizedMessage, attachments, emlStoragePanel.getSaveDirectory(), true);
+              emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(), cc, replyTo, alias,
+                  messagePanel.getSubject(), personalizedMessage, attachments, emlStoragePanel.getSaveDirectory(), true,
+                  btimstamp);
             }
 
             successCount++;
@@ -289,10 +301,10 @@ public class EmailSenderGUI extends JFrame {
 
             // Sla altijd EML op bij fout
             emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(),
-                personalizeMessage(messagePanel.getSubject(), recipient),
+                personalizeMessage(messagePanel.getSubject(), recipient), cc, replyTo, alias,
                 personalizeMessage(messagePanel.getMessage(), recipient),
                 attachmentConfig.getAllAttachmentsForRecipient(recipient.getId()), emlStoragePanel.getSaveDirectory(),
-                false);
+                false, btimstamp);
           }
         }
 
@@ -344,9 +356,9 @@ public class EmailSenderGUI extends JFrame {
 
             List<File> attachments = attachmentConfig.getAllAttachmentsForRecipient(recipient.getId());
 
-            File savedFile = emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(),
+            File savedFile = emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(), cc, replyTo, alias,
                 personalizeMessage(messagePanel.getSubject(), recipient), personalizedMessage, attachments,
-                emlStoragePanel.getSaveDirectory(), true);
+                emlStoragePanel.getSaveDirectory(), true, btimstamp);
 
             if (savedFile != null) {
               successCount++;
