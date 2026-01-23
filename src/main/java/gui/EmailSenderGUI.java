@@ -1,6 +1,9 @@
 package gui;
 
 import gui.panels.*;
+import kwee.library.ApplicationMessages;
+import kwee.library.JarInfo;
+import main.Main;
 import main.UserSetting;
 
 import models.AttachmentConfig;
@@ -24,6 +27,7 @@ public class EmailSenderGUI extends JFrame {
    */
   private static final long serialVersionUID = -1600749552354317771L;
   private UserSetting m_params = UserSetting.getInstance();
+  private ApplicationMessages bundle = ApplicationMessages.getInstance();
 
   // Services
   private EmailService emailService;
@@ -36,6 +40,7 @@ public class EmailSenderGUI extends JFrame {
   private AttachmentsPanel attachmentsPanel;
   private EmlStoragePanel emlStoragePanel;
   private LogPanel logPanel;
+  private JMenuBar menuBar = new JMenuBar();
 
   private List<EmailRecipient> admEmailRecipients = new ArrayList<EmailRecipient>();
 
@@ -61,15 +66,22 @@ public class EmailSenderGUI extends JFrame {
   public EmailSenderGUI(String a_title, List<RecipientData> recipientData, SMTPConfig smtpConfig,
       MessageConfig messageConfig, List<File> commonAttachments) {
 
+    Main.m_creationtime = JarInfo.getProjectVersion(Main.class);
+    Main.c_CopyrightYear = JarInfo.getYear(Main.class);
+    String apptxt = bundle.getMessage("AppTitel", Main.m_creationtime, Main.c_CopyrightYear);
     if (a_title.isBlank()) {
-      setTitle("E-mail Verzender Pro");
+      setTitle(apptxt);
     } else {
-      setTitle("E-mail Verzender Pro, " + a_title);
+      setTitle(apptxt + ", " + a_title);
     }
 
     setSize(800, 450);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setLocationRelativeTo(null);
+
+    DefMenuBar dmenu = new DefMenuBar();
+    menuBar = dmenu.defineMenuBar(this);
+    setJMenuBar(menuBar);
 
     // Initialize services
     logPanel = new LogPanel();

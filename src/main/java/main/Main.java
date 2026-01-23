@@ -6,11 +6,19 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import gui.EmailSenderGUI;
+import kwee.library.JarInfo;
+import main.Main;
 
 public class Main {
+  static public String m_creationtime;
+  static public String c_CopyrightYear;
+
   private UserSetting m_params = UserSetting.getInstance();
 
   public static void main(String[] args) {
+    m_creationtime = JarInfo.getProjectVersion(Main.class);
+    c_CopyrightYear = JarInfo.getYear(Main.class);
+
     SwingUtilities.invokeLater(() -> {
       try {
         // Gebruik system look and feel
