@@ -3,6 +3,8 @@ package services;
 import jakarta.mail.Session;
 
 import jakarta.mail.internet.MimeMessage;
+import main.UserSetting;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
@@ -13,9 +15,12 @@ import java.util.function.Consumer;
 
 public class EmlService {
   private Consumer<String> logger;
+  private UserSetting m_params = UserSetting.getInstance();
+  private boolean btimstamp = true;
 
   public EmlService(Consumer<String> logger) {
     this.logger = logger;
+    btimstamp = m_params.is_TimeStamp();
   }
 
   /**
@@ -33,9 +38,9 @@ public class EmlService {
    * @return
    */
   public File saveAsEml(String from, String to, String cc, String replyTo, String alias, String subject, String message,
-      List<File> attachments, String saveDir, boolean success, boolean btimstamp) {
-
+      List<File> attachments, String saveDir, boolean success) {
     File emlFile = null;
+
     try {
       // Maak directory aan als deze niet bestaat
       File directory = new File(saveDir);
@@ -91,7 +96,7 @@ public class EmlService {
    */
   public void saveBatchAsEml(String from, List<String> recipients, String cc, String replyTo, String alias,
       String subject, String messageTemplate, List<File> commonAttachments,
-      java.util.function.Function<String, List<File>> personalAttachmentsProvider, String saveDir, boolean btimstamp) {
+      java.util.function.Function<String, List<File>> personalAttachmentsProvider, String saveDir) {
 
     logger.accept("Batch EML opslag gestart voor " + recipients.size() + " ontvangers");
     int successCount = 0;
@@ -113,7 +118,7 @@ public class EmlService {
 
         // Sla op als EML
         File savedFile = saveAsEml(from, recipient, cc, replyTo, alias, subject, personalizedMessage, allAttachments,
-            saveDir, true, btimstamp);
+            saveDir, true);
 
         if (savedFile != null) {
           successCount++;

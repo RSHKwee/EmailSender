@@ -16,39 +16,50 @@ import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import kwee.logger.MyLogger;
+import main.UserSetting;
 
 public class CreateMailMessage {
   private static final Logger LOGGER = MyLogger.getLogger();
 
   /**
+   * Create mail a mail could also be send to the "from" address. Depends on User
+   * setting.
    * 
-   * @param session
-   * @param from
-   * @param to
-   * @param cc
-   * @param replyTo
-   * @param subject
-   * @param message
-   * @param attachments
-   * @param alias
-   * @return
+   * @param session     Session
+   * @param from        From address, also BCC address
+   * @param to          To address
+   * @param cc          CC address
+   * @param replyTo     Reply to address
+   * @param subject     Subject
+   * @param message     Message text
+   * @param attachments List of files to attach
+   * @param alias       Alias for From and Alias address
+   * @return Composed mail (as MimeMessage)
    */
   public static MimeMessage createMail(Session session, String from, String to, String cc, String replyTo,
       String subject, String message, List<File> attachments, String alias) {
 
+    UserSetting m_params = UserSetting.getInstance();
+    boolean toBCC = m_params.is_toBCC();
+
     MimeMessage mimeMessage = new MimeMessage(session);
     try {
-      // Stel headers in
+      // Initialize headers
       if (alias.isBlank()) {
         mimeMessage.setFrom(new InternetAddress(from));
       } else {
         mimeMessage.setFrom(new InternetAddress(from, alias));
       }
-
+      // BCC
+      if (toBCC) {
+        mimeMessage.setRecipient(Message.RecipientType.BCC, new InternetAddress(from));
+      }
+      // CC
       mimeMessage.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
       if (!cc.isBlank()) {
         mimeMessage.setRecipient(Message.RecipientType.CC, new InternetAddress(cc));
       }
+      // Reply-to
       if (!replyTo.isBlank()) {
         if (alias.isBlank()) {
           mimeMessage.setReplyTo(new Address[] { new InternetAddress(replyTo) });
@@ -56,22 +67,23 @@ public class CreateMailMessage {
           mimeMessage.setReplyTo(new Address[] { new InternetAddress(replyTo, alias) });
         }
       }
+      // SUbject
       mimeMessage.setSubject(subject);
       mimeMessage.setSentDate(new Date());
-
+      // Attachments
       if (attachments == null || attachments.isEmpty()) {
-        // Zonder bijlagen
+        // No attachments
         mimeMessage.setText(message, "utf-8");
       } else {
-        // Met bijlagen
+        // With attachments
         MimeMultipart multipart = new MimeMultipart();
 
-        // Tekst deel
+        // Message body
         MimeBodyPart textPart = new MimeBodyPart();
         textPart.setText(message, "utf-8");
         multipart.addBodyPart(textPart);
 
-        // Bijlagen
+        // Attachments
         for (File file : attachments) {
           if (file.exists() && file.canRead()) {
             MimeBodyPart attachmentPart = new MimeBodyPart();

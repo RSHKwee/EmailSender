@@ -92,13 +92,22 @@ public class MessagePanel extends JPanel {
     JPanel personalPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
     personalPanel.add(new JLabel("Variabelen: "));
 
-    String[] variables = { "{naam}", "{email}", "{id}", "{datum}", "{tijd}" };
-    for (String var : variables) {
-      JButton btn = new JButton(var);
-      btn.addActionListener(e -> messageArea.insert(var, messageArea.getCaretPosition()));
-      personalPanel.add(btn);
-    }
+    // Maak een JComboBox met de variabelen
+    String[] variables = { "{achternaam}", "{datum}", "{email}", "{id}", "{naam}", "{plaats}", "{postcode}",
+        "{straat_nr}", "{voornaam}" };
+    JComboBox<String> variableComboBox = new JComboBox<>(variables);
     bottomPanel.add(personalPanel, BorderLayout.WEST);
+
+    // Voeg een actielistener toe voor wanneer een item geselecteerd wordt
+    variableComboBox.addActionListener(e -> {
+      String selectedVariable = (String) variableComboBox.getSelectedItem();
+      if (selectedVariable != null) {
+        messageArea.insert(selectedVariable, messageArea.getCaretPosition());
+      }
+    });
+
+    // Voeg de dropdown toe aan het panel
+    personalPanel.add(variableComboBox);
 
     // Character count
     charCountLabel = new JLabel("Tekens: 0");

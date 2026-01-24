@@ -1,23 +1,27 @@
 package services;
 
 import jakarta.mail.*;
+import jakarta.mail.Message.RecipientType;
 import jakarta.mail.internet.*;
-import jakarta.activation.DataHandler;
-import jakarta.activation.FileDataSource;
+import kwee.logger.MyLogger;
+
 import java.io.File;
 import java.util.List;
 import java.util.Properties;
-import java.util.function.Consumer;
+//import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class EmailService {
-  private Consumer<String> logger;
+  private static final Logger LOGGER = MyLogger.getLogger();
+  // private Consumer<String> logger;
   private String smtpHost;
   private int port;
   private String username;
   private String password;
 
-  public EmailService(Consumer<String> logger) {
-    this.logger = logger;
+  public EmailService() {
+    // this.logger = logger;
   }
 
   public void configure(String smtpHost, int port, String username, String password) {
@@ -47,46 +51,9 @@ public class EmailService {
         attachments, alias);
 
     try {
-      // MimeMessage mimeMessage = new MimeMessage(session);
-      mimeMessage.setFrom(new InternetAddress(username));
-      mimeMessage.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
-//TODO
-      mimeMessage
-          .setReplyTo(new Address[] { new InternetAddress("hoevelaken.duurzaam@proton.me", "Hoevelaken Duurzaam") });
-      mimeMessage.setSubject(subject);
-
-      if (attachments == null || attachments.isEmpty()) {
-        // Zonder bijlagen
-        mimeMessage.setText(message, "utf-8");
-      } else {
-        // Met bijlagen
-        Multipart multipart = new MimeMultipart();
-
-        // Tekst deel
-        MimeBodyPart messagePart = new MimeBodyPart();
-        messagePart.setText(message, "utf-8");
-        multipart.addBodyPart(messagePart);
-
-        // Bijlagen
-        for (File file : attachments) {
-          if (file.exists() && file.canRead()) {
-            MimeBodyPart attachmentPart = new MimeBodyPart();
-            FileDataSource source = new FileDataSource(file);
-            attachmentPart.setDataHandler(new DataHandler(source));
-            attachmentPart.setFileName(file.getName());
-            multipart.addBodyPart(attachmentPart);
-          } else {
-            logger.accept("Waarschuwing: Bestand niet gevonden of niet leesbaar: " + file.getPath());
-          }
-        }
-
-        mimeMessage.setContent(multipart);
-      }
-
       // Verzend de e-mail
       Transport.send(mimeMessage);
-      logger.accept("✓ E-mail succesvol verzonden naar: " + to);
-
+      LOGGER.log(Level.INFO, "✓ E-mail succesvol verzonden naar: " + to);
     } catch (AddressException e) {
       throw new MessagingException("Ongeldig e-mailadres: " + to, e);
     } catch (MessagingException e) {
@@ -117,7 +84,7 @@ public class EmailService {
       Transport transport = session.getTransport("smtp");
       try {
         transport.connect();
-        logger.accept("✓ SMTP verbinding succesvol met " + smtpHost + ":" + port);
+        LOGGER.log(Level.INFO, "✓ SMTP verbinding succesvol met " + smtpHost + ":" + port);
         return true;
       } finally {
         if (transport != null) {
@@ -125,13 +92,13 @@ public class EmailService {
         }
       }
     } catch (AuthenticationFailedException e) {
-      logger.accept("✗ Authenticatie mislukt: " + e.getMessage());
+      LOGGER.log(Level.INFO, "✗ Authenticatie mislukt: " + e.getMessage());
       return false;
     } catch (MessagingException e) {
-      logger.accept("✗ Verbinding mislukt: " + e.getMessage());
+      LOGGER.log(Level.INFO, "✗ Verbinding mislukt: " + e.getMessage());
       return false;
     } catch (Exception e) {
-      logger.accept("✗ Onverwachte fout: " + e.getMessage());
+      LOGGER.log(Level.INFO, "✗ Onverwachte fout: " + e.getMessage());
       return false;
     }
   }
@@ -141,7 +108,7 @@ public class EmailService {
       String messageTemplate, List<File> commonAttachments,
       java.util.function.Function<String, List<File>> personalAttachmentsProvider) {
 
-    logger.accept("Bulk verzending gestart voor " + recipients.size() + " ontvangers");
+    LOGGER.log(Level.INFO, "Bulk verzending gestart voor " + recipients.size() + " ontvangers");
 
     for (String recipient : recipients) {
       try {
@@ -161,16 +128,40 @@ public class EmailService {
         Thread.sleep(1000);
 
       } catch (MessagingException e) {
-        logger.accept("✗ Fout bij verzenden naar " + recipient + ": " + e.getMessage());
+        LOGGER.log(Level.INFO, "✗ Fout bij verzenden naar " + recipient + ": " + e.getMessage());
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-        logger.accept("Verzending onderbroken");
+        LOGGER.log(Level.INFO, "Verzending onderbroken");
         break;
       } catch (Exception e) {
-        logger.accept("✗ Onverwachte fout voor " + recipient + ": " + e.getMessage());
+        LOGGER.log(Level.INFO, "✗ Onverwachte fout voor " + recipient + ": " + e.getMessage());
       }
     }
 
-    logger.accept("Bulk verzending voltooid");
+    LOGGER.log(Level.INFO, "Bulk verzending voltooid");
+  }
+
+  public void sendEmail(File emlFile) throws MessagingException {
+    Properties props = new Properties();
+    props.put("mail.smtp.auth", "true");
+    props.put("mail.smtp.starttls.enable", "true");
+    props.put("mail.smtp.host", smtpHost);
+    props.put("mail.smtp.port", String.valueOf(port));
+
+    Session session = Session.getInstance(props, new Authenticator() {
+      @Override
+      protected PasswordAuthentication getPasswordAuthentication() {
+        return new PasswordAuthentication(username, password);
+      }
+    });
+
+    try {
+      MimeMessage message = JakartaEmlConverter.convertEmlFile(session, emlFile);
+      // Verzend de e-mail
+      Transport.send(message);
+      LOGGER.log(Level.INFO, "✓ E-mail succesvol verzonden naar: " + message.getRecipients(RecipientType.TO));
+    } catch (Exception e) {
+      throw new MessagingException("Onverwachte fout: " + e.getMessage(), e);
+    }
   }
 }

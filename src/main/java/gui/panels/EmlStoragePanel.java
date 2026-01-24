@@ -2,23 +2,34 @@ package gui.panels;
 
 import javax.swing.*;
 
+import kwee.logger.MyLogger;
 import main.UserSetting;
+import services.EmailService;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class EmlStoragePanel extends JPanel {
   /**
   * 
   */
   private static final long serialVersionUID = -6201832735110220981L;
+  private static final Logger LOGGER = MyLogger.getLogger();
   private UserSetting m_params = UserSetting.getInstance();
 
   private JTextField directoryField;
   private JCheckBox saveEmlCheckbox;
+  private ConfigPanel configPanel;
+  private String emlDir;
 
-  public EmlStoragePanel() {
+  public EmlStoragePanel(ConfigPanel a_configPanel) {
+    configPanel = a_configPanel;
     initComponents();
   }
 
@@ -32,7 +43,7 @@ public class EmlStoragePanel extends JPanel {
 
     JPanel fieldPanel = new JPanel(new BorderLayout(5, 5));
 
-    String emlDir = m_params.get_EmlDirectory();
+    emlDir = m_params.get_EmlDirectory();
     if (emlDir.isBlank()) {
       emlDir = System.getProperty("user.home") + "/eml_storage";
     }
@@ -48,9 +59,33 @@ public class EmlStoragePanel extends JPanel {
 
     // Options
     JPanel optionsPanel = new JPanel(new GridLayout(3, 1, 5, 5));
-    saveEmlCheckbox = new JCheckBox("EML bestanden opslaan bij verzending", true);
-    JCheckBox saveOnFailCheckbox = new JCheckBox("Altijd opslaan bij mislukking", true);
-    JCheckBox includeAttachmentsCheckbox = new JCheckBox("Bijlagen opslaan in EML", true);
+    saveEmlCheckbox = new JCheckBox("EML bestanden opslaan bij verzending", m_params.is_saveEml());
+    JCheckBox saveOnFailCheckbox = new JCheckBox("Altijd opslaan bij mislukking", m_params.is_saveOnFail());
+    JCheckBox includeAttachmentsCheckbox = new JCheckBox("Bijlagen opslaan in EML", m_params.is_includeAttachments());
+
+    saveEmlCheckbox.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        m_params.set_saveEml(saveEmlCheckbox.isSelected());
+        m_params.save();
+      }
+    });
+
+    saveOnFailCheckbox.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        m_params.set_saveOnFail(saveOnFailCheckbox.isSelected());
+        m_params.save();
+      }
+    });
+
+    includeAttachmentsCheckbox.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        m_params.set_includeAttachments(includeAttachmentsCheckbox.isSelected());
+        m_params.save();
+      }
+    });
 
     optionsPanel.add(saveEmlCheckbox);
     optionsPanel.add(saveOnFailCheckbox);
@@ -68,13 +103,29 @@ public class EmlStoragePanel extends JPanel {
 
     JPanel listButtons = new JPanel(new FlowLayout());
     JButton refreshBtn = new JButton("Vernieuwen");
-    refreshBtn.addActionListener(e -> refreshFileList(fileModel));
+    refreshBtn.addActionListener(e -> {
+      refreshFileList(fileModel);
+    });
 
     JButton openBtn = new JButton("Openen");
     openBtn.addActionListener(e -> openSelectedFile(fileList.getSelectedValue()));
 
+    JButton sendBtn = new JButton("Opnieuw verzenden");
+    sendBtn.addActionListener(e -> {
+      try {
+        EmailService emailService = new EmailService();
+        emailService.configure(configPanel.getSmtpHost(), configPanel.getPort(), configPanel.getUsername(),
+            configPanel.getPassword());
+        String emlFile = emlDir + "\\" + fileList.getSelectedValue();
+        emailService.sendEmail(new File(emlFile));
+      } catch (Exception e1) {
+        LOGGER.log(Level.WARNING, e1.getMessage());
+      }
+    });
+
     listButtons.add(refreshBtn);
     listButtons.add(openBtn);
+    listButtons.add(sendBtn);
     listPanel.add(listButtons, BorderLayout.SOUTH);
 
     add(listPanel, BorderLayout.SOUTH);
@@ -86,6 +137,7 @@ public class EmlStoragePanel extends JPanel {
   private void browseDirectory() {
     JFileChooser chooser = new JFileChooser();
     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    chooser.setCurrentDirectory(new File(m_params.get_EmlDirectory()));
     if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
       directoryField.setText(chooser.getSelectedFile().getAbsolutePath());
       m_params.set_EmlDirectory(chooser.getSelectedFile().getAbsolutePath());

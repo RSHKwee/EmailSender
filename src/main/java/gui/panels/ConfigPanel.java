@@ -19,6 +19,10 @@ public class ConfigPanel extends JPanel {
   private JTextField usernameField;
   private JPasswordField passwordField;
 
+  private JTextField ccField;
+  private JTextField replyToField;
+  private JTextField aliasField;
+
   public ConfigPanel() {
     initComponents();
   }
@@ -71,6 +75,27 @@ public class ConfigPanel extends JPanel {
     gbc.gridx = 1;
     passwordField = new JPasswordField(25);
     add(passwordField, gbc);
+
+    gbc.gridy = 6;
+    gbc.gridx = 0;
+    add(new JLabel("cc adres:"), gbc);
+    gbc.gridx = 1;
+    ccField = new JTextField(25);
+    add(ccField, gbc);
+
+    gbc.gridy = 7;
+    gbc.gridx = 0;
+    add(new JLabel("Reply to adres:"), gbc);
+    gbc.gridx = 1;
+    replyToField = new JTextField(25);
+    add(replyToField, gbc);
+
+    gbc.gridy = 8;
+    gbc.gridx = 0;
+    add(new JLabel("Alias:"), gbc);
+    gbc.gridx = 1;
+    aliasField = new JTextField(25);
+    add(aliasField, gbc);
   }
 
   private void setProviderConfig(String provider) {
@@ -94,11 +119,15 @@ public class ConfigPanel extends JPanel {
     }
   }
 
-  public void setSMTPConfig(String host, int port, String username, String password) {
+  public void setSMTPConfig(String host, int port, String username, String password, String cc, String replyTo,
+      String alias) {
     smtpField.setText(host);
     portField.setText(String.valueOf(port));
     usernameField.setText(username);
     passwordField.setText(password);
+    ccField.setText(cc);
+    replyToField.setText(replyTo);
+    aliasField.setText(alias);
   }
 
   // Getters
@@ -121,4 +150,17 @@ public class ConfigPanel extends JPanel {
   public String getPassword() {
     return new String(passwordField.getPassword());
   }
+
+  public String getCc() {
+    return ccField.getText();
+  }
+
+  public String getReplyTo() {
+    return replyToField.getText();
+  }
+
+  public String getAlias() {
+    return aliasField.getText();
+  }
+
 }

@@ -40,7 +40,7 @@ public class DefMenuBar {
   private Level m_Level = Level.INFO;
   private String m_LogDir = "c:/";
   @SuppressWarnings("unused")
-  private boolean m_DuplicateTabs = false; // NO duplicate tabs.
+  private boolean m_toBBC = true; // To BBC.
 
   private ApplicationMessages bundle = ApplicationMessages.getInstance();
 
@@ -181,27 +181,49 @@ public class DefMenuBar {
     });
     mnSettings.add(mntmLogToDisk);
 
-    // Option Double tabs
-    JCheckBoxMenuItem mntmDoubleTabs = new JCheckBoxMenuItem(bundle.getMessage("DoubleTabs"));
-    // mntmDoubleTabs.setState(m_param.is_DuplicateTabs());
-    mntmDoubleTabs.addActionListener(new ActionListener() {
+    // Option To BBC
+    JCheckBoxMenuItem mntmToBBC = new JCheckBoxMenuItem(bundle.getMessage("ToBBC"));
+    mntmToBBC.setState(m_param.is_toBCC());
+    mntmToBBC.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-        boolean selected = mntmDoubleTabs.isSelected();
+        boolean selected = mntmToBBC.isSelected();
         if (selected) {
-//          m_param.set_DuplicateTabs(selected);
-          m_DuplicateTabs = selected;
+          m_param.set_toBCC(selected);
+          m_toBBC = selected;
           m_param.save();
-          LOGGER.log(Level.INFO, bundle.getMessage("DoubleTabsSet", Boolean.toString(selected)));
+          LOGGER.log(Level.INFO, bundle.getMessage("ToBBCSel", Boolean.toString(selected)));
         } else {
-//          m_param.set_DuplicateTabs(selected);
-          m_DuplicateTabs = selected;
+          m_param.set_toBCC(selected);
+          m_toBBC = selected;
           m_param.save();
-          LOGGER.log(Level.INFO, bundle.getMessage("DoubleTabsSet", Boolean.toString(selected)));
+          LOGGER.log(Level.INFO, bundle.getMessage("ToBBCSel", Boolean.toString(selected)));
         }
       }
     });
-    mnSettings.add(mntmDoubleTabs);
+    mnSettings.add(mntmToBBC);
+
+    // Option Timestamp in filename
+    JCheckBoxMenuItem mntmTimestamp = new JCheckBoxMenuItem(bundle.getMessage("Timestamp"));
+    mntmTimestamp.setState(m_param.is_TimeStamp());
+    mntmTimestamp.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        boolean selected = mntmTimestamp.isSelected();
+        if (selected) {
+          m_param.set_Timestamp(selected);
+          m_toBBC = selected;
+          m_param.save();
+          LOGGER.log(Level.INFO, bundle.getMessage("TimestampSel", Boolean.toString(selected)));
+        } else {
+          m_param.set_Timestamp(selected);
+          m_toBBC = selected;
+          m_param.save();
+          LOGGER.log(Level.INFO, bundle.getMessage("TimestampSel", Boolean.toString(selected)));
+        }
+      }
+    });
+    mnSettings.add(mntmTimestamp);
 
     // Option Preferences
     JMenuItem mntmPreferences = new JMenuItem(bundle.getMessage("Preferences"));
