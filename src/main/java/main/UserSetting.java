@@ -274,7 +274,7 @@ public class UserSetting {
   }
 
   /**
-   * Copy UserSetings
+   * Copy UserSetings,freeze for testing purpose
    * 
    * @return Copy of UserSetings
    */
@@ -305,6 +305,9 @@ public class UserSetting {
     }
   }
 
+  /**
+   * Restore settings, for testing purpose.
+   */
   public void unfreeze() {
     if (freezeInstance != null) {
       uniqueInstance.set_toDisk(m_toDisk);

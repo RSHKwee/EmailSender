@@ -5,7 +5,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import kwee.logger.MyLogger;
-import library.Personalize;
+import library.MailPersonalize;
 import main.UserSetting;
 
 import java.awt.*;
@@ -94,7 +94,7 @@ public class MessagePanel extends JPanel {
     personalPanel.add(new JLabel("Variabelen: "));
 
     // Maak een JComboBox met de variabelen
-    String[] variables = Personalize.getTags();
+    String[] variables = MailPersonalize.getTags();
     JComboBox<String> variableComboBox = new JComboBox<>(variables);
     bottomPanel.add(personalPanel, BorderLayout.WEST);
 

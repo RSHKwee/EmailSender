@@ -5,7 +5,7 @@ import kwee.library.JarInfo;
 import kwee.logger.MyLogger;
 import library.EmailService;
 import library.EmlService;
-import library.Personalize;
+import library.MailPersonalize;
 import main.Main;
 import main.UserSetting;
 
@@ -315,14 +315,14 @@ public class EmailSenderGUI extends JFrame {
 
           try {
             // Personaliseer bericht
-            String personalizedMessage = Personalize.personalizeMessage(messagePanel.getMessage(), recipient);
+            String personalizedMessage = MailPersonalize.personalizeMessage(messagePanel.getMessage(), recipient);
 
             // Haal bijlagen op voor deze ontvanger
             List<File> attachments = attachmentConfig.getAllAttachmentsForRecipient(recipient.getId());
 
             // Verzend e-mail
             emailService.sendEmail(recipient.getEmail(), configPanel.getCc(), configPanel.getReplyTo(),
-                configPanel.getAlias(), Personalize.personalizeMessage(messagePanel.getSubject(), recipient),
+                configPanel.getAlias(), MailPersonalize.personalizeMessage(messagePanel.getSubject(), recipient),
                 personalizedMessage, attachments);
 
             // Sla EML op indien gewenst
@@ -344,9 +344,9 @@ public class EmailSenderGUI extends JFrame {
 
             // Sla altijd EML op bij fout
             emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(),
-                Personalize.personalizeMessage(messagePanel.getSubject(), recipient), configPanel.getCc(),
+                MailPersonalize.personalizeMessage(messagePanel.getSubject(), recipient), configPanel.getCc(),
                 configPanel.getReplyTo(), configPanel.getAlias(),
-                Personalize.personalizeMessage(messagePanel.getMessage(), recipient),
+                MailPersonalize.personalizeMessage(messagePanel.getMessage(), recipient),
                 attachmentConfig.getAllAttachmentsForRecipient(recipient.getId()), emlStoragePanel.getSaveDirectory(),
                 false);
           }
@@ -396,13 +396,13 @@ public class EmailSenderGUI extends JFrame {
 
         for (EmailRecipient recipient : admEmailRecipients) {
           try {
-            String personalizedMessage = Personalize.personalizeMessage(messagePanel.getMessage(), recipient);
+            String personalizedMessage = MailPersonalize.personalizeMessage(messagePanel.getMessage(), recipient);
 
             List<File> attachments = attachmentConfig.getAllAttachmentsForRecipient(recipient.getId());
 
             File savedFile = emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(), configPanel.getCc(),
                 configPanel.getReplyTo(), configPanel.getAlias(),
-                Personalize.personalizeMessage(messagePanel.getSubject(), recipient), personalizedMessage, attachments,
+                MailPersonalize.personalizeMessage(messagePanel.getSubject(), recipient), personalizedMessage, attachments,
                 emlStoragePanel.getSaveDirectory(), true);
 
             if (savedFile != null) {
