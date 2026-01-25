@@ -1,4 +1,4 @@
-package services;
+package library;
 
 import jakarta.mail.*;
 import jakarta.mail.Message.RecipientType;
@@ -47,8 +47,8 @@ public class EmailService {
       }
     });
 
-    MimeMessage mimeMessage = CreateMailMessage.createMail(session, username, to, cc, replyTo, subject, message,
-        attachments, alias);
+    MimeMessage mimeMessage = MailMessage.createMail(session, username, to, cc, replyTo, subject, message, attachments,
+        alias);
 
     try {
       // Verzend de e-mail
@@ -156,7 +156,7 @@ public class EmailService {
     });
 
     try {
-      MimeMessage message = JakartaEmlConverter.convertEmlFile(session, emlFile);
+      MimeMessage message = MailMessage.convertEmlFile(session, emlFile);
       // Verzend de e-mail
       Transport.send(message);
       LOGGER.log(Level.INFO, "✓ E-mail succesvol verzonden naar: " + message.getRecipients(RecipientType.TO));

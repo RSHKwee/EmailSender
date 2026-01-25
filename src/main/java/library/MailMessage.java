@@ -1,6 +1,8 @@
-package services;
+package library;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -18,7 +20,7 @@ import jakarta.mail.internet.MimeMultipart;
 import kwee.logger.MyLogger;
 import main.UserSetting;
 
-public class CreateMailMessage {
+public class MailMessage {
   private static final Logger LOGGER = MyLogger.getLogger();
 
   /**
@@ -67,7 +69,7 @@ public class CreateMailMessage {
           mimeMessage.setReplyTo(new Address[] { new InternetAddress(replyTo, alias) });
         }
       }
-      // SUbject
+      // Subject
       mimeMessage.setSubject(subject);
       mimeMessage.setSentDate(new Date());
       // Attachments
@@ -101,5 +103,12 @@ public class CreateMailMessage {
       LOGGER.log(Level.INFO, "CreateMimeMessage: " + e.getMessage());
     }
     return mimeMessage;
+  }
+
+  public static MimeMessage convertEmlFile(Session session, File emlFile) throws Exception {
+    try (InputStream inputStream = new FileInputStream(emlFile)) {
+      MimeMessage message = new MimeMessage(session, inputStream);
+      return message;
+    }
   }
 }

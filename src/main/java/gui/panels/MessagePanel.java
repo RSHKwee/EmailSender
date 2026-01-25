@@ -5,6 +5,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import kwee.logger.MyLogger;
+import library.Personalize;
 import main.UserSetting;
 
 import java.awt.*;
@@ -93,8 +94,7 @@ public class MessagePanel extends JPanel {
     personalPanel.add(new JLabel("Variabelen: "));
 
     // Maak een JComboBox met de variabelen
-    String[] variables = { "{achternaam}", "{datum}", "{email}", "{id}", "{naam}", "{plaats}", "{postcode}",
-        "{straat_nr}", "{voornaam}" };
+    String[] variables = Personalize.getTags();
     JComboBox<String> variableComboBox = new JComboBox<>(variables);
     bottomPanel.add(personalPanel, BorderLayout.WEST);
 

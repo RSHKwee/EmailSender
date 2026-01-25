@@ -3,13 +3,14 @@ package gui;
 import kwee.library.ApplicationMessages;
 import kwee.library.JarInfo;
 import kwee.logger.MyLogger;
+import library.EmailService;
+import library.EmlService;
+import library.Personalize;
 import main.Main;
 import main.UserSetting;
 
 import models.AttachmentConfig;
 import models.EmailRecipient;
-import services.EmailService;
-import services.EmlService;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -314,15 +315,15 @@ public class EmailSenderGUI extends JFrame {
 
           try {
             // Personaliseer bericht
-            String personalizedMessage = personalizeMessage(messagePanel.getMessage(), recipient);
+            String personalizedMessage = Personalize.personalizeMessage(messagePanel.getMessage(), recipient);
 
             // Haal bijlagen op voor deze ontvanger
             List<File> attachments = attachmentConfig.getAllAttachmentsForRecipient(recipient.getId());
 
             // Verzend e-mail
             emailService.sendEmail(recipient.getEmail(), configPanel.getCc(), configPanel.getReplyTo(),
-                configPanel.getAlias(), personalizeMessage(messagePanel.getSubject(), recipient), personalizedMessage,
-                attachments);
+                configPanel.getAlias(), Personalize.personalizeMessage(messagePanel.getSubject(), recipient),
+                personalizedMessage, attachments);
 
             // Sla EML op indien gewenst
             if (emlStoragePanel.shouldSaveEml()) {
@@ -343,8 +344,9 @@ public class EmailSenderGUI extends JFrame {
 
             // Sla altijd EML op bij fout
             emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(),
-                personalizeMessage(messagePanel.getSubject(), recipient), configPanel.getCc(), configPanel.getReplyTo(),
-                configPanel.getAlias(), personalizeMessage(messagePanel.getMessage(), recipient),
+                Personalize.personalizeMessage(messagePanel.getSubject(), recipient), configPanel.getCc(),
+                configPanel.getReplyTo(), configPanel.getAlias(),
+                Personalize.personalizeMessage(messagePanel.getMessage(), recipient),
                 attachmentConfig.getAllAttachmentsForRecipient(recipient.getId()), emlStoragePanel.getSaveDirectory(),
                 false);
           }
@@ -394,13 +396,13 @@ public class EmailSenderGUI extends JFrame {
 
         for (EmailRecipient recipient : admEmailRecipients) {
           try {
-            String personalizedMessage = personalizeMessage(messagePanel.getMessage(), recipient);
+            String personalizedMessage = Personalize.personalizeMessage(messagePanel.getMessage(), recipient);
 
             List<File> attachments = attachmentConfig.getAllAttachmentsForRecipient(recipient.getId());
 
             File savedFile = emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(), configPanel.getCc(),
                 configPanel.getReplyTo(), configPanel.getAlias(),
-                personalizeMessage(messagePanel.getSubject(), recipient), personalizedMessage, attachments,
+                Personalize.personalizeMessage(messagePanel.getSubject(), recipient), personalizedMessage, attachments,
                 emlStoragePanel.getSaveDirectory(), true);
 
             if (savedFile != null) {
@@ -473,27 +475,6 @@ public class EmailSenderGUI extends JFrame {
       return false;
     }
     return true;
-  }
-
-  private String personalizeMessage(String template, EmailRecipient recipient) {
-    // Simple personalization - kan uitgebreid worden
-
-    String lstr = template.replace("{naam}", recipient.getNaam());
-    lstr = lstr.replace("{voornaam}", recipient.getVoornaam());
-    lstr = lstr.replace("{achternaam}", recipient.getAchternaam());
-    lstr = lstr.replace("{straat_nr}", recipient.getStraatHnr());
-    lstr = lstr.replace("{postcode}", recipient.getPostcode());
-    lstr = lstr.replace("{plaats}", recipient.getPlaats());
-
-    lstr = lstr.replace("{email}", recipient.getEmail());
-    lstr = lstr.replace("{id}", recipient.getId());
-
-    // Current date and time, with custom format
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    LocalDateTime now = LocalDateTime.now();
-    lstr = lstr.replace("{datum}", now.format(formatter));
-
-    return lstr;
   }
 
   private void clearAll() {

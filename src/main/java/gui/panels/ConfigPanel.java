@@ -3,6 +3,7 @@ package gui.panels;
 import javax.swing.*;
 
 import kwee.logger.MyLogger;
+import main.UserSetting;
 
 import java.awt.*;
 import java.util.logging.Logger;
@@ -13,6 +14,7 @@ public class ConfigPanel extends JPanel {
   */
   private static final long serialVersionUID = 6238324373086768935L;
   private static final Logger LOGGER = MyLogger.getLogger();
+  private UserSetting m_params = UserSetting.getInstance();
 
   private JTextField smtpField;
   private JTextField portField;
@@ -37,6 +39,7 @@ public class ConfigPanel extends JPanel {
     // Provider selector
     String[] providers = { "Kies provider...", "Gmail", "Outlook/Hotmail", "Office365", "Yahoo", "Custom" };
     JComboBox<String> providerCombo = new JComboBox<>(providers);
+    providerCombo.setSelectedItem(m_params.get_MailProvider());
     providerCombo.addActionListener(e -> setProviderConfig((String) providerCombo.getSelectedItem()));
 
     gbc.gridx = 0;
@@ -99,6 +102,8 @@ public class ConfigPanel extends JPanel {
   }
 
   private void setProviderConfig(String provider) {
+    m_params.set_MailProvider(provider);
+    m_params.save();
     switch (provider) {
     case "Gmail":
       smtpField.setText("smtp.gmail.com");

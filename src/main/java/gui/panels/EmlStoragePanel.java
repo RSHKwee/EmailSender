@@ -3,8 +3,8 @@ package gui.panels;
 import javax.swing.*;
 
 import kwee.logger.MyLogger;
+import library.EmailService;
 import main.UserSetting;
-import services.EmailService;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;

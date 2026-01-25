@@ -39,8 +39,6 @@ public class DefMenuBar {
   private boolean m_toDisk = false;
   private Level m_Level = Level.INFO;
   private String m_LogDir = "c:/";
-  @SuppressWarnings("unused")
-  private boolean m_toBBC = true; // To BBC.
 
   private ApplicationMessages bundle = ApplicationMessages.getInstance();
 
@@ -181,6 +179,27 @@ public class DefMenuBar {
     });
     mnSettings.add(mntmLogToDisk);
 
+    JMenuItem mntmEmailConfig = new JMenuItem("Mailconfiguratie");
+    mntmEmailConfig.setName("Mailconfiguratie directory");
+    mntmEmailConfig.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        File l_mailConfigDir = new File(m_param.get_mailConfigDirectory());
+        JFileChooser fileChooser = new JFileChooser(l_mailConfigDir);
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fileChooser.setSelectedFile(l_mailConfigDir);
+        int option = fileChooser.showOpenDialog(hoofdFrame);
+        if (option == JFileChooser.APPROVE_OPTION) {
+          File file = fileChooser.getSelectedFile();
+          LOGGER.log(Level.INFO, "Mail configuratie directory: " + file.getAbsolutePath());
+          l_mailConfigDir = file;
+          m_param.set_mailConfigDirectory(l_mailConfigDir.getAbsolutePath());
+          mntmEmailConfig.setText(l_mailConfigDir.getAbsolutePath());
+        }
+      }
+    });
+    mnSettings.add(mntmEmailConfig);
+
     // Option To BBC
     JCheckBoxMenuItem mntmToBBC = new JCheckBoxMenuItem(bundle.getMessage("ToBBC"));
     mntmToBBC.setState(m_param.is_toBCC());
@@ -190,12 +209,10 @@ public class DefMenuBar {
         boolean selected = mntmToBBC.isSelected();
         if (selected) {
           m_param.set_toBCC(selected);
-          m_toBBC = selected;
           m_param.save();
           LOGGER.log(Level.INFO, bundle.getMessage("ToBBCSel", Boolean.toString(selected)));
         } else {
           m_param.set_toBCC(selected);
-          m_toBBC = selected;
           m_param.save();
           LOGGER.log(Level.INFO, bundle.getMessage("ToBBCSel", Boolean.toString(selected)));
         }
@@ -203,7 +220,7 @@ public class DefMenuBar {
     });
     mnSettings.add(mntmToBBC);
 
-    // Option Timestamp in filename
+    // Option Timestamp in eml filename
     JCheckBoxMenuItem mntmTimestamp = new JCheckBoxMenuItem(bundle.getMessage("Timestamp"));
     mntmTimestamp.setState(m_param.is_TimeStamp());
     mntmTimestamp.addActionListener(new ActionListener() {
@@ -212,12 +229,10 @@ public class DefMenuBar {
         boolean selected = mntmTimestamp.isSelected();
         if (selected) {
           m_param.set_Timestamp(selected);
-          m_toBBC = selected;
           m_param.save();
           LOGGER.log(Level.INFO, bundle.getMessage("TimestampSel", Boolean.toString(selected)));
         } else {
           m_param.set_Timestamp(selected);
-          m_toBBC = selected;
           m_param.save();
           LOGGER.log(Level.INFO, bundle.getMessage("TimestampSel", Boolean.toString(selected)));
         }

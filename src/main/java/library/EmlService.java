@@ -1,4 +1,4 @@
-package services;
+package library;
 
 import jakarta.mail.Session;
 
@@ -65,8 +65,8 @@ public class EmlService {
       // Maak een nieuwe mail sessie
       Session session = Session.getInstance(new Properties());
 
-      MimeMessage mimeMessage = CreateMailMessage.createMail(session, from, to, cc, replyTo, subject, message,
-          attachments, alias);
+      MimeMessage mimeMessage = MailMessage.createMail(session, from, to, cc, replyTo, subject, message, attachments,
+          alias);
 
       // Schrijf naar bestand
       try (FileOutputStream fos = new FileOutputStream(emlFile)) {

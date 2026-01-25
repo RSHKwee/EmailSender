@@ -1,12 +1,9 @@
 package main;
 
-import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-
-import javax.swing.JCheckBox;
 
 import kwee.logger.MyLogger;
 
@@ -40,6 +37,8 @@ public class UserSetting {
   private String c_saveEml = "SaveEML";
   private String c_saveOnFail = "SaveOnFail";
   private String c_includeAttachments = "IncludeAttachments";
+  private String c_mailConfigDirectory = "MailConfigDirectory";
+  private String c_MailProvider = "MailProvider";
 
   private String m_Level = c_LevelValue;
   private String m_LookAndFeel;
@@ -57,13 +56,11 @@ public class UserSetting {
   private boolean m_saveEml = true;
   private boolean m_saveOnFail = true;
   private boolean m_includeAttachments = true;
+  private String m_mailConfigDirectory = "";
+  private String m_MailProvider = "";
 
   private Preferences pref;
   private Preferences userPrefs = Preferences.userRoot();
-
-  /**
-   * Constructor Initialize settings
-   */
 
   /**
    * Get "access" to Singleton.
@@ -101,6 +98,8 @@ public class UserSetting {
     m_saveOnFail = pref.getBoolean(c_saveOnFail, true);
     m_includeAttachments = pref.getBoolean(c_includeAttachments, true);
 
+    String mailCnfDir = System.getProperty("user.home") + "\\emailsender";
+    m_mailConfigDirectory = pref.get(c_mailConfigDirectory, mailCnfDir);
   }
 
   // Getters for all parameters
@@ -158,6 +157,14 @@ public class UserSetting {
 
   public boolean is_includeAttachments() {
     return m_includeAttachments;
+  }
+
+  public String get_mailConfigDirectory() {
+    return m_mailConfigDirectory;
+  }
+
+  public String get_MailProvider() {
+    return m_MailProvider;
   }
 
   // Setters for all parameters.
@@ -227,6 +234,16 @@ public class UserSetting {
     this.m_includeAttachments = a_includeAttachments;
   }
 
+  public void set_mailConfigDirectory(String a_mailConfigDirectory) {
+    pref.put(c_mailConfigDirectory, a_mailConfigDirectory);
+    this.m_mailConfigDirectory = a_mailConfigDirectory;
+  }
+
+  public void set_MailProvider(String a_MailProvider) {
+    pref.put(c_MailProvider, a_MailProvider);
+    this.m_MailProvider = a_MailProvider;
+  }
+
   /**
    * Save all settings
    */
@@ -247,6 +264,8 @@ public class UserSetting {
       pref.putBoolean(c_saveEml, m_saveEml);
       pref.putBoolean(c_saveOnFail, m_saveOnFail);
       pref.putBoolean(c_includeAttachments, m_includeAttachments);
+      pref.put(c_mailConfigDirectory, m_mailConfigDirectory);
+      pref.put(c_MailProvider, m_MailProvider);
 
       pref.flush();
     } catch (BackingStoreException e) {
@@ -278,6 +297,9 @@ public class UserSetting {
       freezeInstance.set_saveEml(m_saveEml);
       freezeInstance.set_saveOnFail(m_saveOnFail);
       freezeInstance.set_includeAttachments(m_includeAttachments);
+      freezeInstance.set_mailConfigDirectory(m_mailConfigDirectory);
+      freezeInstance.set_MailProvider(m_MailProvider);
+
     } else {
       LOGGER.log(Level.INFO, "Nothing to freeze....");
     }
@@ -301,6 +323,9 @@ public class UserSetting {
       uniqueInstance.set_saveEml(freezeInstance.is_saveEml());
       uniqueInstance.set_saveOnFail(freezeInstance.is_saveOnFail());
       uniqueInstance.set_includeAttachments(freezeInstance.is_includeAttachments());
+      uniqueInstance.set_mailConfigDirectory(freezeInstance.get_mailConfigDirectory());
+      uniqueInstance.set_MailProvider(freezeInstance.get_MailProvider());
+
       freezeInstance = null;
     } else {
       LOGGER.log(Level.INFO, "Nothing to unfreeze....");
@@ -331,41 +356,9 @@ public class UserSetting {
     l_line = l_line + c_saveEml + ": " + m_saveEml + "\n";
     l_line = l_line + c_saveOnFail + ": " + m_saveOnFail + "\n";
     l_line = l_line + c_includeAttachments + ": " + m_includeAttachments + "\n";
+    l_line = l_line + c_mailConfigDirectory + ": " + m_mailConfigDirectory + "\n";
+    l_line = l_line + c_MailProvider + ": " + m_MailProvider + "\n";
 
     return l_line;
-  }
-
-  // Local functions to convert File to String and vice versa
-  private String c_StringDelim = ";";
-
-  /**
-   * Convert list of Files to String for storage.
-   * 
-   * @param a_Files List of Files
-   * @return String
-   */
-  private String FilesToString(File[] a_Files) {
-    String l_files = "";
-    for (int i = 0; i < a_Files.length; i++) {
-      l_files = l_files + a_Files[i].getAbsolutePath() + c_StringDelim;
-    }
-    return l_files;
-  }
-
-  /**
-   * Convert String to Files.
-   * 
-   * @param a_Files String with list of Files.
-   * @return List of Files
-   */
-  private File[] StringToFiles(String a_Files) {
-    String[] ls_files = a_Files.split(c_StringDelim);
-    File[] l_files = new File[ls_files.length];
-
-    for (int i = 0; i < ls_files.length; i++) {
-      File ll_file = new File(ls_files[i]);
-      l_files[i] = ll_file;
-    }
-    return l_files;
   }
 }
