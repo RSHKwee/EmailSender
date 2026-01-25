@@ -3,6 +3,7 @@ package gui.panels;
 import javax.swing.*;
 
 import kwee.logger.MyLogger;
+import main.UserSetting;
 
 import java.awt.*;
 import java.util.logging.Logger;
@@ -13,11 +14,16 @@ public class ConfigPanel extends JPanel {
   */
   private static final long serialVersionUID = 6238324373086768935L;
   private static final Logger LOGGER = MyLogger.getLogger();
+  private UserSetting m_params = UserSetting.getInstance();
 
   private JTextField smtpField;
   private JTextField portField;
   private JTextField usernameField;
   private JPasswordField passwordField;
+
+  private JTextField ccField;
+  private JTextField replyToField;
+  private JTextField aliasField;
 
   public ConfigPanel() {
     initComponents();
@@ -33,6 +39,7 @@ public class ConfigPanel extends JPanel {
     // Provider selector
     String[] providers = { "Kies provider...", "Gmail", "Outlook/Hotmail", "Office365", "Yahoo", "Custom" };
     JComboBox<String> providerCombo = new JComboBox<>(providers);
+    providerCombo.setSelectedItem(m_params.get_MailProvider());
     providerCombo.addActionListener(e -> setProviderConfig((String) providerCombo.getSelectedItem()));
 
     gbc.gridx = 0;
@@ -71,9 +78,32 @@ public class ConfigPanel extends JPanel {
     gbc.gridx = 1;
     passwordField = new JPasswordField(25);
     add(passwordField, gbc);
+
+    gbc.gridy = 6;
+    gbc.gridx = 0;
+    add(new JLabel("cc adres:"), gbc);
+    gbc.gridx = 1;
+    ccField = new JTextField(25);
+    add(ccField, gbc);
+
+    gbc.gridy = 7;
+    gbc.gridx = 0;
+    add(new JLabel("Reply to adres:"), gbc);
+    gbc.gridx = 1;
+    replyToField = new JTextField(25);
+    add(replyToField, gbc);
+
+    gbc.gridy = 8;
+    gbc.gridx = 0;
+    add(new JLabel("Alias:"), gbc);
+    gbc.gridx = 1;
+    aliasField = new JTextField(25);
+    add(aliasField, gbc);
   }
 
   private void setProviderConfig(String provider) {
+    m_params.set_MailProvider(provider);
+    m_params.save();
     switch (provider) {
     case "Gmail":
       smtpField.setText("smtp.gmail.com");
@@ -94,11 +124,15 @@ public class ConfigPanel extends JPanel {
     }
   }
 
-  public void setSMTPConfig(String host, int port, String username, String password) {
+  public void setSMTPConfig(String host, int port, String username, String password, String cc, String replyTo,
+      String alias) {
     smtpField.setText(host);
     portField.setText(String.valueOf(port));
     usernameField.setText(username);
     passwordField.setText(password);
+    ccField.setText(cc);
+    replyToField.setText(replyTo);
+    aliasField.setText(alias);
   }
 
   // Getters
@@ -121,4 +155,17 @@ public class ConfigPanel extends JPanel {
   public String getPassword() {
     return new String(passwordField.getPassword());
   }
+
+  public String getCc() {
+    return ccField.getText();
+  }
+
+  public String getReplyTo() {
+    return replyToField.getText();
+  }
+
+  public String getAlias() {
+    return aliasField.getText();
+  }
+
 }

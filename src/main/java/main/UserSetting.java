@@ -1,6 +1,5 @@
 package main;
 
-import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -33,6 +32,13 @@ public class UserSetting {
   private String c_EmlDirectory = "EML_Directory";
   private String c_Subject = "Subject";
   private String c_Message = "Message";
+  private String c_toBCC = "to_BCC";
+  private String c_TimeStamp = "Timestamp";
+  private String c_saveEml = "SaveEML";
+  private String c_saveOnFail = "SaveOnFail";
+  private String c_includeAttachments = "IncludeAttachments";
+  private String c_mailConfigDirectory = "MailConfigDirectory";
+  private String c_MailProvider = "MailProvider";
 
   private String m_Level = c_LevelValue;
   private String m_LookAndFeel;
@@ -44,13 +50,17 @@ public class UserSetting {
   private String m_EmlDirectory = "";
   private String m_Subject = "";
   private String m_Message = "";
+  private boolean m_toBCC = true;
+  private boolean m_TimeStamp = true;
+
+  private boolean m_saveEml = true;
+  private boolean m_saveOnFail = true;
+  private boolean m_includeAttachments = true;
+  private String m_mailConfigDirectory = "";
+  private String m_MailProvider = "";
 
   private Preferences pref;
   private Preferences userPrefs = Preferences.userRoot();
-
-  /**
-   * Constructor Initialize settings
-   */
 
   /**
    * Get "access" to Singleton.
@@ -82,6 +92,14 @@ public class UserSetting {
     m_EmlDirectory = pref.get(c_EmlDirectory, "");
     m_Subject = pref.get(c_Subject, "");
     m_Message = pref.get(c_Message, "");
+    m_toBCC = pref.getBoolean(c_toBCC, true);
+    m_TimeStamp = pref.getBoolean(c_TimeStamp, true);
+    m_saveEml = pref.getBoolean(c_saveEml, true);
+    m_saveOnFail = pref.getBoolean(c_saveOnFail, true);
+    m_includeAttachments = pref.getBoolean(c_includeAttachments, true);
+
+    String mailCnfDir = System.getProperty("user.home") + "\\emailsender";
+    m_mailConfigDirectory = pref.get(c_mailConfigDirectory, mailCnfDir);
   }
 
   // Getters for all parameters
@@ -119,6 +137,34 @@ public class UserSetting {
 
   public String get_Message() {
     return m_Message;
+  }
+
+  public boolean is_toBCC() {
+    return m_toBCC;
+  }
+
+  public boolean is_TimeStamp() {
+    return m_TimeStamp;
+  }
+
+  public boolean is_saveEml() {
+    return m_saveEml;
+  }
+
+  public boolean is_saveOnFail() {
+    return m_saveOnFail;
+  }
+
+  public boolean is_includeAttachments() {
+    return m_includeAttachments;
+  }
+
+  public String get_mailConfigDirectory() {
+    return m_mailConfigDirectory;
+  }
+
+  public String get_MailProvider() {
+    return m_MailProvider;
   }
 
   // Setters for all parameters.
@@ -163,6 +209,41 @@ public class UserSetting {
     this.m_EmlDirectory = a_EmlDirectory;
   }
 
+  public void set_toBCC(boolean a_toBCC) {
+    pref.putBoolean(c_toBCC, a_toBCC);
+    this.m_toBCC = a_toBCC;
+  }
+
+  public void set_Timestamp(boolean a_timstamp) {
+    pref.putBoolean(c_TimeStamp, a_timstamp);
+    this.m_TimeStamp = a_timstamp;
+  }
+
+  public void set_saveEml(boolean a_saveEml) {
+    pref.putBoolean(c_saveEml, a_saveEml);
+    this.m_saveEml = a_saveEml;
+  }
+
+  public void set_saveOnFail(boolean a_saveOnFail) {
+    pref.putBoolean(c_saveOnFail, a_saveOnFail);
+    this.m_saveOnFail = a_saveOnFail;
+  }
+
+  public void set_includeAttachments(boolean a_includeAttachments) {
+    pref.putBoolean(c_includeAttachments, a_includeAttachments);
+    this.m_includeAttachments = a_includeAttachments;
+  }
+
+  public void set_mailConfigDirectory(String a_mailConfigDirectory) {
+    pref.put(c_mailConfigDirectory, a_mailConfigDirectory);
+    this.m_mailConfigDirectory = a_mailConfigDirectory;
+  }
+
+  public void set_MailProvider(String a_MailProvider) {
+    pref.put(c_MailProvider, a_MailProvider);
+    this.m_MailProvider = a_MailProvider;
+  }
+
   /**
    * Save all settings
    */
@@ -178,6 +259,13 @@ public class UserSetting {
       pref.put(c_EmlDirectory, m_EmlDirectory);
       pref.put(c_Subject, m_Subject);
       pref.put(c_Message, m_Message);
+      pref.putBoolean(c_toBCC, m_toBCC);
+      pref.putBoolean(c_TimeStamp, m_TimeStamp);
+      pref.putBoolean(c_saveEml, m_saveEml);
+      pref.putBoolean(c_saveOnFail, m_saveOnFail);
+      pref.putBoolean(c_includeAttachments, m_includeAttachments);
+      pref.put(c_mailConfigDirectory, m_mailConfigDirectory);
+      pref.put(c_MailProvider, m_MailProvider);
 
       pref.flush();
     } catch (BackingStoreException e) {
@@ -186,7 +274,7 @@ public class UserSetting {
   }
 
   /**
-   * Copy UserSetings
+   * Copy UserSetings,freeze for testing purpose
    * 
    * @return Copy of UserSetings
    */
@@ -204,12 +292,22 @@ public class UserSetting {
       freezeInstance.set_EmlDirectory(m_EmlDirectory);
       freezeInstance.set_Message(m_Message);
       freezeInstance.set_Subject(m_Subject);
+      freezeInstance.set_toBCC(m_toBCC);
+      freezeInstance.set_Timestamp(m_TimeStamp);
+      freezeInstance.set_saveEml(m_saveEml);
+      freezeInstance.set_saveOnFail(m_saveOnFail);
+      freezeInstance.set_includeAttachments(m_includeAttachments);
+      freezeInstance.set_mailConfigDirectory(m_mailConfigDirectory);
+      freezeInstance.set_MailProvider(m_MailProvider);
 
     } else {
       LOGGER.log(Level.INFO, "Nothing to freeze....");
     }
   }
 
+  /**
+   * Restore settings, for testing purpose.
+   */
   public void unfreeze() {
     if (freezeInstance != null) {
       uniqueInstance.set_toDisk(m_toDisk);
@@ -223,6 +321,13 @@ public class UserSetting {
       uniqueInstance.set_EmlDirectory(freezeInstance.get_EmlDirectory());
       uniqueInstance.set_Subject(freezeInstance.get_Subject());
       uniqueInstance.set_Message(freezeInstance.get_Message());
+      uniqueInstance.set_toBCC(freezeInstance.is_toBCC());
+      uniqueInstance.set_Timestamp(freezeInstance.is_TimeStamp());
+      uniqueInstance.set_saveEml(freezeInstance.is_saveEml());
+      uniqueInstance.set_saveOnFail(freezeInstance.is_saveOnFail());
+      uniqueInstance.set_includeAttachments(freezeInstance.is_includeAttachments());
+      uniqueInstance.set_mailConfigDirectory(freezeInstance.get_mailConfigDirectory());
+      uniqueInstance.set_MailProvider(freezeInstance.get_MailProvider());
 
       freezeInstance = null;
     } else {
@@ -249,41 +354,14 @@ public class UserSetting {
     l_line = l_line + c_EmlDirectory + ": " + m_EmlDirectory + "\n";
     l_line = l_line + c_Subject + ": " + m_Subject + "\n";
     l_line = l_line + c_Message + ": " + m_Message + "\n";
+    l_line = l_line + c_toBCC + ": " + m_toBCC + "\n";
+    l_line = l_line + c_TimeStamp + ": " + m_TimeStamp + "\n";
+    l_line = l_line + c_saveEml + ": " + m_saveEml + "\n";
+    l_line = l_line + c_saveOnFail + ": " + m_saveOnFail + "\n";
+    l_line = l_line + c_includeAttachments + ": " + m_includeAttachments + "\n";
+    l_line = l_line + c_mailConfigDirectory + ": " + m_mailConfigDirectory + "\n";
+    l_line = l_line + c_MailProvider + ": " + m_MailProvider + "\n";
 
     return l_line;
-  }
-
-  // Local functions to convert File to String and vice versa
-  private String c_StringDelim = ";";
-
-  /**
-   * Convert list of Files to String for storage.
-   * 
-   * @param a_Files List of Files
-   * @return String
-   */
-  private String FilesToString(File[] a_Files) {
-    String l_files = "";
-    for (int i = 0; i < a_Files.length; i++) {
-      l_files = l_files + a_Files[i].getAbsolutePath() + c_StringDelim;
-    }
-    return l_files;
-  }
-
-  /**
-   * Convert String to Files.
-   * 
-   * @param a_Files String with list of Files.
-   * @return List of Files
-   */
-  private File[] StringToFiles(String a_Files) {
-    String[] ls_files = a_Files.split(c_StringDelim);
-    File[] l_files = new File[ls_files.length];
-
-    for (int i = 0; i < ls_files.length; i++) {
-      File ll_file = new File(ls_files[i]);
-      l_files[i] = ll_file;
-    }
-    return l_files;
   }
 }

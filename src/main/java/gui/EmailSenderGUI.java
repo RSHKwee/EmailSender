@@ -1,20 +1,48 @@
 package gui;
 
-import gui.panels.*;
+import kwee.library.ApplicationMessages;
+import kwee.library.JarInfo;
+import kwee.logger.MyLogger;
+import library.EmailService;
+import library.EmlService;
+import library.MailPersonalize;
+import main.Main;
 import main.UserSetting;
 
 import models.AttachmentConfig;
 import models.EmailRecipient;
-import services.EmailService;
-import services.EmlService;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingWorker;
+
+import gui.panels.AttachmentsPanel;
+import gui.panels.ConfigPanel;
+import gui.panels.EmlStoragePanel;
+import gui.panels.LogPanel;
+import gui.panels.MessagePanel;
+import gui.panels.RecipientsPanel;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -24,6 +52,8 @@ public class EmailSenderGUI extends JFrame {
    */
   private static final long serialVersionUID = -1600749552354317771L;
   private UserSetting m_params = UserSetting.getInstance();
+  private ApplicationMessages bundle = ApplicationMessages.getInstance();
+  private static final Logger LOGGER = MyLogger.getLogger();
 
   // Services
   private EmailService emailService;
@@ -36,6 +66,7 @@ public class EmailSenderGUI extends JFrame {
   private AttachmentsPanel attachmentsPanel;
   private EmlStoragePanel emlStoragePanel;
   private LogPanel logPanel;
+  private JMenuBar menuBar = new JMenuBar();
 
   private List<EmailRecipient> admEmailRecipients = new ArrayList<EmailRecipient>();
 
@@ -45,24 +76,37 @@ public class EmailSenderGUI extends JFrame {
 
   // Nieuwe constructors
   public EmailSenderGUI() {
-    this(new ArrayList<>(), null, null, null);
+    this("", new ArrayList<>(), null, null, null);
   }
 
   public EmailSenderGUI(List<RecipientData> recipientData) {
-    this(recipientData, null, null, null);
+    this("", recipientData, null, null, null);
   }
 
-  public EmailSenderGUI(List<RecipientData> recipientData, SMTPConfig smtpConfig, MessageConfig messageConfig,
-      List<File> commonAttachments) {
+  public EmailSenderGUI(String a_title, List<RecipientData> recipientData, SMTPConfig smtpConfig,
+      MessageConfig messageConfig, List<File> commonAttachments) {
 
-    setTitle("E-mail Verzender Pro");
+    Main.m_creationtime = JarInfo.getProjectVersion(Main.class);
+    Main.c_CopyrightYear = JarInfo.getYear(Main.class);
+
+    String apptxt = bundle.getMessage("AppTitel", Main.m_creationtime, Main.c_CopyrightYear);
+    if (a_title.isBlank()) {
+      setTitle(apptxt);
+    } else {
+      setTitle(apptxt + ", " + a_title);
+    }
+
     setSize(800, 450);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setLocationRelativeTo(null);
 
+    DefMenuBar dmenu = new DefMenuBar();
+    menuBar = dmenu.defineMenuBar(this);
+    setJMenuBar(menuBar);
+
     // Initialize services
     logPanel = new LogPanel();
-    emailService = new EmailService(logPanel::log);
+    emailService = new EmailService();
     emlService = new EmlService(logPanel::log);
     pendingRecipientsUpdate = new ArrayList<>();
 
@@ -90,6 +134,14 @@ public class EmailSenderGUI extends JFrame {
     }
 
     if (messageConfig != null) {
+      String l_Subject = m_params.get_Subject();
+      String l_Message = m_params.get_Message();
+      if (!l_Subject.isBlank()) {
+        messageConfig.subject = l_Subject;
+      }
+      if (!l_Message.isBlank()) {
+        messageConfig.template = l_Message;
+      }
       applyMessageConfig(messageConfig);
     }
 
@@ -102,7 +154,8 @@ public class EmailSenderGUI extends JFrame {
 
   // Private helper methoden om configuratie toe te passen
   private void applySMTPConfig(SMTPConfig config) {
-    configPanel.setSMTPConfig(config.host, config.port, config.username, config.password);
+    configPanel.setSMTPConfig(config.host, config.port, config.username, config.password, config.cc, config.replyTo,
+        config.alias);
   }
 
   private void applyMessageConfig(MessageConfig config) {
@@ -158,7 +211,7 @@ public class EmailSenderGUI extends JFrame {
     configPanel = new ConfigPanel();
     messagePanel = new MessagePanel();
     attachmentsPanel = new AttachmentsPanel();
-    emlStoragePanel = new EmlStoragePanel();
+    emlStoragePanel = new EmlStoragePanel(configPanel);
 
     // Create recipients panel last, with delayed callback
     recipientsPanel = new RecipientsPanel(this::onRecipientsUpdated);
@@ -262,19 +315,21 @@ public class EmailSenderGUI extends JFrame {
 
           try {
             // Personaliseer bericht
-            String personalizedMessage = personalizeMessage(messagePanel.getMessage(), recipient);
+            String personalizedMessage = MailPersonalize.personalizeMessage(messagePanel.getMessage(), recipient);
 
             // Haal bijlagen op voor deze ontvanger
             List<File> attachments = attachmentConfig.getAllAttachmentsForRecipient(recipient.getId());
 
             // Verzend e-mail
-            emailService.sendEmail(recipient.getEmail(), personalizeMessage(messagePanel.getSubject(), recipient),
+            emailService.sendEmail(recipient.getEmail(), configPanel.getCc(), configPanel.getReplyTo(),
+                configPanel.getAlias(), MailPersonalize.personalizeMessage(messagePanel.getSubject(), recipient),
                 personalizedMessage, attachments);
 
             // Sla EML op indien gewenst
             if (emlStoragePanel.shouldSaveEml()) {
-              emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(), messagePanel.getSubject(),
-                  personalizedMessage, attachments, emlStoragePanel.getSaveDirectory(), true);
+              emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(), configPanel.getCc(),
+                  configPanel.getReplyTo(), configPanel.getAlias(), messagePanel.getSubject(), personalizedMessage,
+                  attachments, emlStoragePanel.getSaveDirectory(), true);
             }
 
             successCount++;
@@ -289,8 +344,9 @@ public class EmailSenderGUI extends JFrame {
 
             // Sla altijd EML op bij fout
             emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(),
-                personalizeMessage(messagePanel.getSubject(), recipient),
-                personalizeMessage(messagePanel.getMessage(), recipient),
+                MailPersonalize.personalizeMessage(messagePanel.getSubject(), recipient), configPanel.getCc(),
+                configPanel.getReplyTo(), configPanel.getAlias(),
+                MailPersonalize.personalizeMessage(messagePanel.getMessage(), recipient),
                 attachmentConfig.getAllAttachmentsForRecipient(recipient.getId()), emlStoragePanel.getSaveDirectory(),
                 false);
           }
@@ -340,12 +396,13 @@ public class EmailSenderGUI extends JFrame {
 
         for (EmailRecipient recipient : admEmailRecipients) {
           try {
-            String personalizedMessage = personalizeMessage(messagePanel.getMessage(), recipient);
+            String personalizedMessage = MailPersonalize.personalizeMessage(messagePanel.getMessage(), recipient);
 
             List<File> attachments = attachmentConfig.getAllAttachmentsForRecipient(recipient.getId());
 
-            File savedFile = emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(),
-                personalizeMessage(messagePanel.getSubject(), recipient), personalizedMessage, attachments,
+            File savedFile = emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(), configPanel.getCc(),
+                configPanel.getReplyTo(), configPanel.getAlias(),
+                MailPersonalize.personalizeMessage(messagePanel.getSubject(), recipient), personalizedMessage, attachments,
                 emlStoragePanel.getSaveDirectory(), true);
 
             if (savedFile != null) {
@@ -418,28 +475,6 @@ public class EmailSenderGUI extends JFrame {
       return false;
     }
     return true;
-  }
-
-//TODO
-  private String personalizeMessage(String template, EmailRecipient recipient) {
-    // Simple personalization - kan uitgebreid worden
-
-    String lstr = template.replace("{naam}", recipient.getNaam());
-    lstr = lstr.replace("{voornaam}", recipient.getVoornaam());
-    lstr = lstr.replace("{achternaam}", recipient.getAchternaam());
-    lstr = lstr.replace("{straat_nr}", recipient.getStraatHnr());
-    lstr = lstr.replace("{postcode}", recipient.getPostcode());
-    lstr = lstr.replace("{plaats}", recipient.getPlaats());
-
-    lstr = lstr.replace("{email}", recipient.getEmail());
-    lstr = lstr.replace("{id}", recipient.getId());
-
-    // Current date and time, with custom format
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    LocalDateTime now = LocalDateTime.now();
-    lstr = lstr.replace("{datum}", now.format(formatter));
-
-    return lstr;
   }
 
   private void clearAll() {
@@ -549,12 +584,19 @@ public class EmailSenderGUI extends JFrame {
     public int port;
     public String username;
     public String password;
+    public String cc;
+    public String replyTo;
+    public String alias;
 
-    public SMTPConfig(String host, int port, String username, String password) {
+    public SMTPConfig(String host, int port, String username, String password, String cc, String replyTo,
+        String alias) {
       this.host = host;
       this.port = port;
       this.username = username;
       this.password = password;
+      this.cc = cc;
+      this.replyTo = replyTo;
+      this.alias = alias;
     }
   }
 

@@ -10,6 +10,11 @@
     <version>0.0.1.0</version>
     <packaging>jar</packaging>
     
+    <properties> 
+       <project.description>Email sender</project.description>
+       <com.fasterxml.jackson.core.version>2.17.2</com.fasterxml.jackson.core.version> 
+    </properties>
+    
     <parent>
       <groupId>kwee</groupId>
 	  <artifactId>aggregator</artifactId>
@@ -55,27 +60,17 @@
             <optional>true</optional>
         </dependency>
         
-    <!-- For PDF generation -->
-    <dependency>
-        <groupId>org.apache.pdfbox</groupId>
-        <artifactId>pdfbox</artifactId>
-        <version>2.0.24</version>
-    </dependency>
-    
-    <!-- For Word document generation -->
-    <dependency>
-        <groupId>org.apache.poi</groupId>
-        <artifactId>poi-ooxml</artifactId>
-        <version>5.2.3</version>
-    </dependency>
-    
-    <!-- For image processing -->
-    <dependency>
-        <groupId>com.twelvemonkeys.imageio</groupId>
-        <artifactId>imageio-jpeg</artifactId>
-        <version>3.9.4</version>
-    </dependency>
-  </dependencies>
+        <dependency>
+           <groupId>com.fasterxml.jackson.core</groupId>
+           <artifactId>jackson-databind</artifactId>
+           <version>${com.fasterxml.jackson.core.version}</version>
+         </dependency>
+         <dependency>
+           <groupId>com.fasterxml.jackson.dataformat</groupId>
+           <artifactId>jackson-dataformat-yaml</artifactId>
+           <version>${com.fasterxml.jackson.core.version}</version>
+         </dependency>
+    </dependencies>
     
     <build>
         <plugins>
