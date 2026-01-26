@@ -39,6 +39,9 @@ public class UserSetting {
   private String c_includeAttachments = "IncludeAttachments";
   private String c_mailConfigDirectory = "MailConfigDirectory";
   private String c_MailProvider = "MailProvider";
+  private String c_CC = "CarbonCopy";
+  private String c_ReplyTo = "Reply-to";
+  private String c_Alias = "Alias";
 
   private String m_Level = c_LevelValue;
   private String m_LookAndFeel;
@@ -58,6 +61,9 @@ public class UserSetting {
   private boolean m_includeAttachments = true;
   private String m_mailConfigDirectory = "";
   private String m_MailProvider = "";
+  private String m_CC = "";
+  private String m_ReplyTo = "";
+  private String m_Alias = "";
 
   private Preferences pref;
   private Preferences userPrefs = Preferences.userRoot();
@@ -97,7 +103,9 @@ public class UserSetting {
     m_saveEml = pref.getBoolean(c_saveEml, true);
     m_saveOnFail = pref.getBoolean(c_saveOnFail, true);
     m_includeAttachments = pref.getBoolean(c_includeAttachments, true);
-
+    m_CC = pref.get(c_CC, "");
+    m_ReplyTo = pref.get(c_ReplyTo, "");
+    m_Alias = pref.get(c_Alias, "");
     String mailCnfDir = System.getProperty("user.home") + "\\emailsender";
     m_mailConfigDirectory = pref.get(c_mailConfigDirectory, mailCnfDir);
   }
@@ -165,6 +173,18 @@ public class UserSetting {
 
   public String get_MailProvider() {
     return m_MailProvider;
+  }
+
+  public String get_CC() {
+    return m_CC;
+  }
+
+  public String get_ReplyTo() {
+    return m_ReplyTo;
+  }
+
+  public String get_Alias() {
+    return m_Alias;
   }
 
   // Setters for all parameters.
@@ -244,6 +264,21 @@ public class UserSetting {
     this.m_MailProvider = a_MailProvider;
   }
 
+  public void set_CC(String a_CC) {
+    pref.put(c_CC, a_CC);
+    this.m_CC = a_CC;
+  }
+
+  public void set_ReplyTo(String a_ReplyTo) {
+    pref.put(c_ReplyTo, a_ReplyTo);
+    this.m_ReplyTo = a_ReplyTo;
+  }
+
+  public void set_Alias(String a_Alias) {
+    pref.put(c_Alias, a_Alias);
+    this.m_Alias = a_Alias;
+  }
+
   /**
    * Save all settings
    */
@@ -266,6 +301,9 @@ public class UserSetting {
       pref.putBoolean(c_includeAttachments, m_includeAttachments);
       pref.put(c_mailConfigDirectory, m_mailConfigDirectory);
       pref.put(c_MailProvider, m_MailProvider);
+      pref.put(c_CC, m_CC);
+      pref.put(c_ReplyTo, m_ReplyTo);
+      pref.put(c_Alias, m_Alias);
 
       pref.flush();
     } catch (BackingStoreException e) {
@@ -299,6 +337,9 @@ public class UserSetting {
       freezeInstance.set_includeAttachments(m_includeAttachments);
       freezeInstance.set_mailConfigDirectory(m_mailConfigDirectory);
       freezeInstance.set_MailProvider(m_MailProvider);
+      freezeInstance.set_CC(m_CC);
+      freezeInstance.set_ReplyTo(m_ReplyTo);
+      freezeInstance.set_Alias(m_Alias);
 
     } else {
       LOGGER.log(Level.INFO, "Nothing to freeze....");
@@ -328,6 +369,9 @@ public class UserSetting {
       uniqueInstance.set_includeAttachments(freezeInstance.is_includeAttachments());
       uniqueInstance.set_mailConfigDirectory(freezeInstance.get_mailConfigDirectory());
       uniqueInstance.set_MailProvider(freezeInstance.get_MailProvider());
+      uniqueInstance.set_CC(freezeInstance.get_CC());
+      uniqueInstance.set_ReplyTo(freezeInstance.get_ReplyTo());
+      uniqueInstance.set_Alias(freezeInstance.get_Alias());
 
       freezeInstance = null;
     } else {
@@ -361,6 +405,9 @@ public class UserSetting {
     l_line = l_line + c_includeAttachments + ": " + m_includeAttachments + "\n";
     l_line = l_line + c_mailConfigDirectory + ": " + m_mailConfigDirectory + "\n";
     l_line = l_line + c_MailProvider + ": " + m_MailProvider + "\n";
+    l_line = l_line + c_CC + ": " + m_CC + "\n";
+    l_line = l_line + c_ReplyTo + ": " + m_ReplyTo + "\n";
+    l_line = l_line + c_Alias + ": " + m_Alias + "\n";
 
     return l_line;
   }

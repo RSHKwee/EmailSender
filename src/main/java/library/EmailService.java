@@ -49,7 +49,7 @@ public class EmailService {
 
     MimeMessage mimeMessage = MailMessage.createMail(session, username, to, cc, replyTo, subject, message, attachments,
         alias);
-
+    mimeMessage.setFrom(username);
     try {
       // Verzend de e-mail
       Transport.send(mimeMessage);
