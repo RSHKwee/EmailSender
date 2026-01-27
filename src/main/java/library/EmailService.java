@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 
 public class EmailService {
   private static final Logger LOGGER = MyLogger.getLogger();
-  // private Consumer<String> logger;
+
   private String smtpHost;
   private int port;
   private String username;
@@ -35,10 +35,11 @@ public class EmailService {
       List<File> attachments) throws MessagingException {
 
     Properties props = new Properties();
-    props.put("mail.smtp.auth", "true");
-    props.put("mail.smtp.starttls.enable", "true");
     props.put("mail.smtp.host", smtpHost);
     props.put("mail.smtp.port", String.valueOf(port));
+    props.put("mail.smtp.auth", "true");
+    props.put("mail.smtp.starttls.enable", "true");
+    props.put("mail.smtp.starttls.required", "true");
 
     Session session = Session.getInstance(props, new Authenticator() {
       @Override
@@ -49,7 +50,7 @@ public class EmailService {
 
     MimeMessage mimeMessage = MailMessage.createMail(session, username, to, cc, replyTo, subject, message, attachments,
         alias);
-    mimeMessage.setFrom(username);
+
     try {
       // Verzend de e-mail
       Transport.send(mimeMessage);
@@ -65,11 +66,8 @@ public class EmailService {
 
   public boolean testConnection() {
     try {
-      Properties props = new Properties();
-      props.put("mail.smtp.auth", "true");
-      props.put("mail.smtp.starttls.enable", "true");
-      props.put("mail.smtp.host", smtpHost);
-      props.put("mail.smtp.port", String.valueOf(port));
+      Properties props = setProperties();
+
       props.put("mail.smtp.connectiontimeout", "10000");
       props.put("mail.smtp.timeout", "10000");
 
@@ -142,11 +140,7 @@ public class EmailService {
   }
 
   public void sendEmail(File emlFile) throws MessagingException {
-    Properties props = new Properties();
-    props.put("mail.smtp.auth", "true");
-    props.put("mail.smtp.starttls.enable", "true");
-    props.put("mail.smtp.host", smtpHost);
-    props.put("mail.smtp.port", String.valueOf(port));
+    Properties props = setProperties();
 
     Session session = Session.getInstance(props, new Authenticator() {
       @Override
@@ -157,11 +151,23 @@ public class EmailService {
 
     try {
       MimeMessage message = MailMessage.convertEmlFile(session, emlFile);
+      message.setFrom(username);
       // Verzend de e-mail
       Transport.send(message);
-      LOGGER.log(Level.INFO, "✓ E-mail succesvol verzonden naar: " + message.getRecipients(RecipientType.TO));
+      LOGGER.log(Level.INFO,
+          "✓ E-mail succesvol verzonden naar: " + message.getRecipients(RecipientType.TO).toString());
     } catch (Exception e) {
       throw new MessagingException("Onverwachte fout: " + e.getMessage(), e);
     }
+  }
+
+  private Properties setProperties() {
+    Properties props = new Properties();
+    props.put("mail.smtp.host", smtpHost);
+    props.put("mail.smtp.port", String.valueOf(port));
+    props.put("mail.smtp.auth", "true");
+    props.put("mail.smtp.starttls.enable", "true");
+    props.put("mail.smtp.starttls.required", "true");
+    return props;
   }
 }

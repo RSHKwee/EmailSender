@@ -12,6 +12,7 @@ import main.UserSetting;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,12 +50,12 @@ public class ConfigPanel extends JPanel {
 
     // Provider selector
     List<String> l_providers = mailSrvSetting.getIds();
-    if (l_providers.size() == 0) {
-      l_providers.add("Gmail");
-      l_providers.add("Outlook/Hotmail");
-      l_providers.add("Office365");
-      l_providers.add("Yahoo");
-    }
+    l_providers.add("Gmail");
+    l_providers.add("Outlook/Hotmail");
+    l_providers.add("Office365");
+    l_providers.add("Yahoo");
+    TreeSet<String> treeSet = new TreeSet<>(l_providers);
+    l_providers = new ArrayList<>(treeSet);
 
     List<String> temp = new ArrayList<String>();
     temp.add("Kies provider...");
@@ -139,9 +140,10 @@ public class ConfigPanel extends JPanel {
   private void setProviderConfig(String a_provider) {
     String provider = a_provider.trim();
     mailSrvSetting.setId(provider);
+
+    m_params.set_MailProvider(provider);
+    m_params.save();
     if (mailSrvSetting.getPort() == -1) {
-      m_params.set_MailProvider(provider);
-      m_params.save();
       switch (provider) {
       case "Gmail":
         smtpField.setText("smtp.gmail.com");

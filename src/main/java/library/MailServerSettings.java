@@ -128,22 +128,22 @@ public class MailServerSettings {
 
   // == Getters =============================
   public String getHost() {
-    EmailServer srv = mailServersCnf.findServerById(id);
+    EmailServer srv = getSrv(id);
     return srv.getHost();
   }
 
   public int getPort() {
-    EmailServer srv = mailServersCnf.findServerById(id);
+    EmailServer srv = getSrv(id);
     return srv.getPort();
   }
 
   public String getUsername() {
-    EmailServer srv = mailServersCnf.findServerById(id);
+    EmailServer srv = getSrv(id);
     return srv.getUsername();
   }
 
   public String getPassword() {
-    EmailServer srv = mailServersCnf.findServerById(id);
+    EmailServer srv = getSrv(id);
     String clrPassword = "";
     try {
       clrPassword = PasswordEncryptor.decrypt(srv.getPassword(), keyenc);
@@ -164,25 +164,25 @@ public class MailServerSettings {
 
   // == Setters =============================
   public void setHost(String host) {
-    EmailServer srv = mailServersCnf.findServerById(id);
+    EmailServer srv = getSrv(id);
     srv.setHost(host);
     modifyServer(srv);
   }
 
   public void setPort(int port) {
-    EmailServer srv = mailServersCnf.findServerById(id);
+    EmailServer srv = getSrv(id);
     srv.setPort(port);
     modifyServer(srv);
   }
 
   public void setUsername(String username) {
-    EmailServer srv = mailServersCnf.findServerById(id);
+    EmailServer srv = getSrv(id);
     srv.setUsername(username);
     modifyServer(srv);
   }
 
   public void setPassword(String password) {
-    EmailServer srv = mailServersCnf.findServerById(id);
+    EmailServer srv = getSrv(id);
     String crptPassword = password;
     try {
       crptPassword = PasswordEncryptor.encrypt(password, keyenc);
@@ -197,6 +197,15 @@ public class MailServerSettings {
   private static SecretKey loadEncryptionKey(String keyPath) throws Exception {
     byte[] keyBytes = Files.readAllBytes(Paths.get(keyPath));
     return new SecretKeySpec(keyBytes, "AES");
+  }
+
+  private EmailServer getSrv(String a_id) {
+    EmailServer srv = mailServersCnf.findServerById(a_id);
+    if (srv == null) {
+      setId(a_id);
+      srv = mailServersCnf.findServerById(a_id);
+    }
+    return srv;
   }
 
   private void modifyServer(EmailServer a_srv) {
