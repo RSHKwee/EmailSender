@@ -73,43 +73,427 @@
     </dependencies>
     
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.2</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>gui.EmailSenderGUI</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-            
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.4.2</version>
-                <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <archive>
-                        <manifest>
-                            <mainClass>gui.EmailSenderGUI</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>  	
+    <plugins>
+	  <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>${maven-resources-plugin.version}</version>
+        <configuration>
+           <!-- Deze configuratie zorgt ervoor dat @...@ placeholders werken -->
+           <delimiters>
+            <delimiter>@</delimiter>
+          </delimiters>
+          <useDefaultDelimiters>false</useDefaultDelimiters>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>${maven-enforcer-plugin.version}</version> <!-- Gebruik een geschikte versie van de plugin -->
+        <executions>
+          <execution>
+            <id>enforce-maven-version</id>
+            <goals>
+             <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+               <requireMavenVersion>
+                 <version>${maven.min.version}</version> <!-- Minimale Maven-versie vereist -->
+                </requireMavenVersion>
+              </rules>
+              <fail>false</fail> <!-- Stop de build niet bij niet-naleving -->
+            </configuration>
+          </execution>
+        </executions>
+      </plugin> 
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>${maven-assembly-plugin.version}</version> <!-- Gebruik één versie -->
+        
+        <executions>
+          <!-- Execution 1: Maak uber-jar in package fase -->
+          <execution>
+            <id>create-uber-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <archive>
+                <manifest>
+                  <addClasspath>true</addClasspath>
+                  <mainClass>main.Main</mainClass>
+                </manifest>
+              </archive>
+              <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+              <finalName>mailsender</finalName>
+              <appendAssemblyId>true</appendAssemblyId> <!-- Voegt -jar-with-dependencies toe -->
+            </configuration>
+          </execution>
+          
+          <!-- Execution 2: Maak distributie in install fase -->
+		  
+          <execution>
+            <id>create-distribution</id>
+            <phase>deploy</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <finalName>MailSender</finalName>
+              <appendAssemblyId>false</appendAssemblyId>
+              <descriptors>
+                <descriptor>src/assembly/distribution.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+		  
+        </executions>
+      </plugin>
+      
+      <!-- Distribute tools v -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>${maven-resources-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>CopyToolsMailSender</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.basedir}\BuildTools</outputDirectory>
+              <resources>                                        
+                <resource>
+                  <directory>..\BuildTools</directory>
+                  <includes>
+                    <include>HelpChm.cmd</include>
+                    <include>innosetup.cmd</include>
+                  </includes>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+              <encoding>${project.build.sourceEncoding}</encoding>
+            </configuration>
+          </execution>     
+          <execution>
+            <id>CopyToolsMailSender2</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.basedir}</outputDirectory>
+              <resources>                                        
+                <resource>
+                  <directory>..\BuildTools</directory>
+                  <includes>
+                    <include>Library.iss</include>
+                  </includes>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+              <encoding>${project.build.sourceEncoding}</encoding>
+            </configuration>
+          </execution>     
+	      <!-- Distribute readme.md v -->
+          <execution>
+            <id>readme-md</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}</outputDirectory>
+              <resources>                                        
+                <resource>
+                  <directory>.</directory>
+                  <includes>
+                    <include>readme.md</include>
+                    <include>*.PNG</include>
+                    <include>*.jpg</include>
+                  </includes>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+              <encoding>${project.build.sourceEncoding}</encoding>
+            </configuration>
+          </execution>
+          <execution>
+            <id>readme-md-usb</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}\usb\Programs</outputDirectory>
+              <resources>                                        
+                <resource>
+                  <directory>.</directory>
+                  <includes>
+                    <include>readme.md</include>
+                    <include>*.PNG</include>
+                    <include>*.jpg</include>
+                  </includes>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+              <encoding>${project.build.sourceEncoding}</encoding>
+            </configuration>
+          </execution>		  
+          <execution>
+            <id>helpfile</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/help/en</outputDirectory>
+              <resources>                                        
+                <resource>
+                  <directory>${project.basedir}/help/en</directory>
+                  <includes>
+                    <include>osmmapper.chm</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution> 
+          <execution>
+            <id>helpfilenl</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/help/nl</outputDirectory>
+              <resources>                                        
+                <resource>
+                  <directory>${project.basedir}/help/nl</directory>
+                  <includes>
+                    <include>mailsender.chm</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>         
+        </executions>
+      </plugin>		
+	  <!-- readme.md ^ -->
+	  <!-- LAUNCH4J create executable v -->      
+      <plugin>
+         <groupId>com.akathist.maven.plugins.launch4j</groupId>
+         <artifactId>launch4j-maven-plugin</artifactId>
+         <version>${launch4j-maven-plugin.version}</version>
+         <executions>
+           <execution>
+             <id>l4j-clui</id>
+             <phase>package</phase>
+             <goals>
+               <goal>launch4j</goal>
+             </goals>
+             <configuration>
+               <headerType>console</headerType>
+               <jar>${project.build.directory}/mailsender-jar-with-dependencies.jar</jar>
+               <outfile>${project.build.directory}/mailsender.exe</outfile>
+               <downloadUrl>https://cdn.azul.com/zulu/bin/zulu22.32.21-ca-crac-jdk22.0.2-win_x64.zip</downloadUrl>
+               <classPath>
+                 <mainClass>main.Main</mainClass>
+              </classPath>
+              <jre>
+	            <path>%java_home%</path>
+              </jre>
+	  	      <icon>src/main/resources/MailSender.ico</icon>
+              <versionInfo>
+                <fileVersion>${project.version}</fileVersion>
+                <txtFileVersion>${project.version}</txtFileVersion>
+                <fileDescription>${project.name}</fileDescription>
+                <copyright>C</copyright>
+                <productVersion>${project.version}</productVersion>
+                <txtProductVersion>${project.version}</txtProductVersion>
+                <productName>${project.name}</productName>
+                <internalName>mailsender</internalName>
+                <originalFilename>mailsender.exe</originalFilename>
+              </versionInfo>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+	  <!-- LAUNCH4J ^ -->
+	  <!-- Sign executable v -->
+      <plugin>
+        <groupId>net.jsign</groupId>
+        <artifactId>jsign-maven-plugin</artifactId>
+        <version>${jsign-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>sign</id>
+            <phase>package</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+            <configuration>
+            <!--   <file>${project.build.directory}/mailsender-${project.version}.exe</file> -->
+              <file>${project.build.directory}/mailsender.exe</file>
+              <name>Mail sender</name>
+              <url>https://github.com/RSHKwee/EmailSender</url>
+              <keystore>keystore.jks</keystore>
+              <alias>RSHK</alias>
+              <storepass>GW93ayi0j2CfeJx9VoSo</storepass>
+            </configuration>
+          </execution>
+        <!--  
+          <execution>
+            <id>signinst</id>
+            <phase>install</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+            <configuration>
+              <file>${project.build.directory}/mailsender_v${project.version}_setup.exe</file>
+              <name>Mail sender</name>
+              <url>https://github.com/RSHKwee/EmailSender</url>
+              <keystore>keystore.jks</keystore>
+              <alias>RSHK</alias>
+              <storepass>GW93ayi0j2CfeJx9VoSo</storepass>
+            </configuration>
+          </execution>
+        --> 
+        </executions>
+      </plugin>
+
+	  <!-- Sign executable ^ -->
+      <!-- Windows installers v -->    
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>${exec-maven-plugin.version}</version>
+        <executions>
+		  <execution>
+            <id>mailsenderHelpEn</id>
+            <phase>generate-resources</phase>
+           <goals>
+              <goal>exec</goal>
+            </goals>          
+            <configuration>
+              <executable>BuildTools\HelpChm.cmd</executable>
+              <workingDirectory>help/en</workingDirectory>
+              <arguments>
+                <argument>mailsender.hhp</argument>
+              </arguments>
+            </configuration>          
+          </execution>
+		  <execution>
+            <id>mailsenderHelpNl</id>
+            <phase>generate-resources</phase>
+           <goals>
+              <goal>exec</goal>
+            </goals>          
+            <configuration>
+              <executable>BuildTools\HelpChm.cmd</executable>
+              <workingDirectory>help/nl</workingDirectory>
+              <arguments>
+                <argument>mailsender.hhp</argument>
+              </arguments>
+            </configuration>          
+          </execution>	  
+          <execution>
+            <id>innoSetup</id>
+            <phase>post-integration-test</phase>
+           <goals>
+              <goal>exec</goal>
+            </goals>          
+            <configuration>
+              <executable>BuildTools\innosetup.cmd</executable>
+              <workingDirectory>...</workingDirectory>
+              <arguments>
+                <argument>mailsender.iss</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- 2. JPackage Plugin voor zelfstandige app op USB -->
+      <plugin>
+        <groupId>org.panteleyev</groupId>
+        <artifactId>jpackage-maven-plugin</artifactId>
+        <version>${jpackage-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <!-- Voer uit na de "package" fase -->
+            <phase>verify</phase>
+            <goals>
+              <goal>jpackage</goal>
+            </goals>
+          </execution>
+        </executions>
+		<configuration>
+          <overwrite>true</overwrite>
+          <name>MailSender</name>
+          <type>APP_IMAGE</type>
+          <icon>src/main/resources/MailSender.ico</icon>
+          <input>${project.build.directory}</input>
+          <mainJar>mailsender-jar-with-dependencies.jar</mainJar>
+          <runtimeImage>${java.home}</runtimeImage>
+          <destination>${project.build.directory}/USB/Programs</destination>
+         
+          <!-- BELANGRIJK: Verwijzen naar je custom runtime -->
+          <!--       <runtimeImage>${project.basedir}/../jre</runtimeImage> -->
+          
+          <!-- Optionele metadata -->
+          <appVersion>${project.version}</appVersion>
+          <vendor>RSH Kwee</vendor>
+          <copyright>Copyright © 2026 RSH Kwee. Alle rechten voorbehouden.</copyright>
+          <description>Email sender</description>                          
+        </configuration>
+      </plugin>   
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>${maven-antrun-pluginversion}</version>
+        <executions>
+          <execution>
+            <id>cleaninstall</id>
+            <phase>install</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+              <configuration>
+                <target>
+                  <delete dir="${project.basedir}\BuildTools"/>
+                  <delete file="${project.basedir}\Library.iss"/>   
+                  <delete file="${project.build.directory}\osmmapper-${project.version}.jar"/>
+                  <delete file="${project.build.directory}\USB\Programs\OSMMapper\app\osmmapper.exe"/>
+    <!--              <delete file="${project.build.directory}\USB\Programs\OSMMapper\app\osmmapper_v${project.version}_setup.exe"/> -->
+                  <delete file="${project.build.directory}\USB\Programs\OSMMapper\app\osmmapper-${project.version}.jar"/>
+                  <delete dir="${project.build.directory}\USB\Programs\OSMMapper\app\USB"/>
+                </target>
+              </configuration>
+          </execution>
+        </executions>
+      </plugin>  
+    </plugins>
+    <!--    </pluginManagement> -->
+  </build>
+  <distributionManagement>
+    <!-- Upload to Github v-->
+    <repository>
+      <id>github</id>
+      <name>GitHub Packages</name>
+      <url>https://maven.pkg.github.com/RSHKwee/osmmapper</url>
+    </repository>
+    <!-- Upload to Github ^-->
+  </distributionManagement>
 </project>

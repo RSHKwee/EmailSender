@@ -12,6 +12,7 @@ import main.Main;
 public class Main {
   static public String m_creationtime;
   static public String c_CopyrightYear;
+  static public String c_AppName = "EmailSender";
 
   private UserSetting m_params = UserSetting.getInstance();
 

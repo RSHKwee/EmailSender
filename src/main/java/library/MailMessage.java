@@ -28,10 +28,10 @@ public class MailMessage {
    * setting.
    * 
    * @param session     Session
-   * @param from        From address, also BCC address
+   * @param from        From address, also BCC address if no Reply to
    * @param to          To address
    * @param cc          CC address
-   * @param replyTo     Reply to address
+   * @param replyTo     Reply to address, also BCC address
    * @param subject     Subject
    * @param message     Message text
    * @param attachments List of files to attach
@@ -52,10 +52,7 @@ public class MailMessage {
       } else {
         mimeMessage.setFrom(new InternetAddress(from, alias));
       }
-      // BCC
-      if (toBCC) {
-        mimeMessage.setRecipient(Message.RecipientType.BCC, new InternetAddress(from));
-      }
+
       // CC
       mimeMessage.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
       if (!cc.isBlank()) {
@@ -63,10 +60,19 @@ public class MailMessage {
       }
       // Reply-to
       if (!replyTo.isBlank()) {
+        // BCC -> Reply-to
+        if (toBCC) {
+          mimeMessage.setRecipient(Message.RecipientType.BCC, new InternetAddress(replyTo));
+        }
         if (alias.isBlank()) {
           mimeMessage.setReplyTo(new Address[] { new InternetAddress(replyTo) });
         } else {
           mimeMessage.setReplyTo(new Address[] { new InternetAddress(replyTo, alias) });
+        }
+      } else {
+        // BCC -> FROM
+        if (toBCC) {
+          mimeMessage.setRecipient(Message.RecipientType.BCC, new InternetAddress(from));
         }
       }
       // Subject
