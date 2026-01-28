@@ -11,6 +11,7 @@ Met knop "Testen" kan verbinding worden getest, deze verbinding wordt gebruikt v
 - In tab "Bijlagen" kunnen bijlagen worden toegevoegd.
 <br>
  - Algemene bijlagen worden naar alle ontvangers verstuurd.
+<br>
  - Persoonlijke bijlagen alleen naar de betreffende ontvanger.
 <br>
 - In tab "EML Opslag" worden de berichbestanden (in eml formaat) getoond.
