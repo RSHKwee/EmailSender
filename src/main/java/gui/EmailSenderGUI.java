@@ -247,17 +247,17 @@ public class EmailSenderGUI extends JFrame {
     JPanel panel = new JPanel(new GridLayout(1, 6, 5, 5));
     panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+    JButton testBtn = createButton("🔌 Testen", new Color(245, 124, 0), e -> testConnection());
     JButton sendBtn = createButton("📤 Verzenden", new Color(46, 125, 50), e -> sendEmails());
     JButton saveBtn = createButton("💾 Opslaan EML", new Color(21, 101, 192), e -> saveAsEml());
-    JButton testBtn = createButton("🔌 Testen", new Color(245, 124, 0), e -> testConnection());
     // JButton clearBtn = createButton("🧹 Wissen", new Color(158, 158, 158), e ->
     // clearAll());
     JButton helpBtn = createButton("❓ Help", new Color(103, 58, 183), e -> showHelp());
     JButton exitBtn = createButton("🚪 Afsluiten", new Color(198, 40, 40), e -> dispose());
 
+    panel.add(testBtn);
     panel.add(sendBtn);
     panel.add(saveBtn);
-    panel.add(testBtn);
 //    panel.add(clearBtn);
     panel.add(helpBtn);
     panel.add(exitBtn);
@@ -402,8 +402,8 @@ public class EmailSenderGUI extends JFrame {
 
             File savedFile = emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(), configPanel.getCc(),
                 configPanel.getReplyTo(), configPanel.getAlias(),
-                MailPersonalize.personalizeMessage(messagePanel.getSubject(), recipient), personalizedMessage, attachments,
-                emlStoragePanel.getSaveDirectory(), true);
+                MailPersonalize.personalizeMessage(messagePanel.getSubject(), recipient), personalizedMessage,
+                attachments, emlStoragePanel.getSaveDirectory(), true);
 
             if (savedFile != null) {
               successCount++;
