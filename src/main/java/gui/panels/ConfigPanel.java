@@ -61,10 +61,8 @@ public class ConfigPanel extends JPanel {
     temp.add("Kies provider...");
     temp.addAll(l_providers);
     temp.add("Custom");
-
     String[] providers = temp.toArray(new String[0]);
-    // String[] providers = { "Kies provider...", "Gmail", "Outlook/Hotmail",
-    // "Office365", "Yahoo", "Custom" };
+
     JComboBox<String> providerCombo = new JComboBox<>(providers);
     providerCombo.setEditable(true);
     providerCombo.setSelectedItem(m_params.get_MailProvider());
@@ -143,6 +141,7 @@ public class ConfigPanel extends JPanel {
 
     m_params.set_MailProvider(provider);
     m_params.save();
+
     if (mailSrvSetting.getPort() == -1) {
       switch (provider) {
       case "Gmail":
