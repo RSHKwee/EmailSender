@@ -1,17 +1,5 @@
 package gui;
 
-import kwee.library.ApplicationMessages;
-import kwee.library.JarInfo;
-import kwee.logger.MyLogger;
-import library.EmailService;
-import library.EmlService;
-import library.MailPersonalize;
-import main.Main;
-import main.UserSetting;
-
-import models.AttachmentConfig;
-import models.EmailRecipient;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -32,9 +20,24 @@ import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingWorker;
+
+import kwee.library.ApplicationMessages;
+import kwee.library.JarInfo;
+import kwee.logger.MyLogger;
+
+import library.EmailService;
+import library.EmlService;
+import library.MailPersonalize;
+
+import main.Main;
+import main.UserSetting;
+
+import models.AttachmentConfig;
+import models.EmailRecipient;
 
 import gui.panels.AttachmentsPanel;
 import gui.panels.ConfigPanel;
@@ -42,9 +45,6 @@ import gui.panels.EmlStoragePanel;
 import gui.panels.LogPanel;
 import gui.panels.MessagePanel;
 import gui.panels.RecipientsPanel;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 public class EmailSenderGUI extends JFrame {
   /**
@@ -54,6 +54,7 @@ public class EmailSenderGUI extends JFrame {
   private UserSetting m_params = UserSetting.getInstance();
   private ApplicationMessages bundle = ApplicationMessages.getInstance();
   private static final Logger LOGGER = MyLogger.getLogger();
+  private boolean b_StandAlone = true;
 
   // Services
   private EmailService emailService;
@@ -67,6 +68,7 @@ public class EmailSenderGUI extends JFrame {
   private EmlStoragePanel emlStoragePanel;
   private LogPanel logPanel;
   private JMenuBar menuBar = new JMenuBar();
+  private JSplitPane splitPane;
 
   private List<EmailRecipient> admEmailRecipients = new ArrayList<EmailRecipient>();
 
@@ -96,9 +98,9 @@ public class EmailSenderGUI extends JFrame {
       setTitle(apptxt + ", " + a_title);
     }
 
-    setSize(800, 450);
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    setLocationRelativeTo(null);
+    loadWindowProperties();
+    // setSize(800, 450);
+    // setLocationRelativeTo(null);
 
     DefMenuBar dmenu = new DefMenuBar();
     menuBar = dmenu.defineMenuBar(this);
@@ -118,22 +120,30 @@ public class EmailSenderGUI extends JFrame {
     this.addWindowListener(new WindowAdapter() {
       @Override
       public void windowClosing(WindowEvent e) {
-        // Je actie hier
+        saveWindowProperties();
         m_params.save();
-        EmailSenderGUI.this.dispose();
+
+        if (b_StandAlone) {
+          System.exit(0);
+        } else {
+          EmailSenderGUI.this.dispose();
+        }
       }
     });
 
     // Configureer met parameters
     if (smtpConfig != null) {
+      b_StandAlone = false;
       applySMTPConfig(smtpConfig);
     }
 
     if (recipientData != null && !recipientData.isEmpty()) {
+      b_StandAlone = false;
       applyRecipientData(recipientData);
     }
 
     if (messageConfig != null) {
+      b_StandAlone = false;
       String l_Subject = m_params.get_Subject();
       String l_Message = m_params.get_Message();
       if (!l_Subject.isBlank()) {
@@ -146,6 +156,7 @@ public class EmailSenderGUI extends JFrame {
     }
 
     if (commonAttachments != null && !commonAttachments.isEmpty()) {
+      b_StandAlone = false;
       applyCommonAttachments(commonAttachments);
     }
 
@@ -197,7 +208,6 @@ public class EmailSenderGUI extends JFrame {
         }
       }
     }
-
     admEmailRecipients.addAll(recipients);
 
     // Update GUI
@@ -223,15 +233,30 @@ public class EmailSenderGUI extends JFrame {
     tabbedPane.addTab("✉️ Bericht", messagePanel);
     tabbedPane.addTab("📎 Bijlagen", attachmentsPanel);
     tabbedPane.addTab("💾 EML Opslag", emlStoragePanel);
-    tabbedPane.addTab("📋 Log", logPanel);
 
     // Button panel
     JPanel buttonPanel = createButtonPanel();
 
+    // Create a panel for the log and buttons
+    JPanel logAndButtonPanel = new JPanel(new BorderLayout());
+    logAndButtonPanel.add(logPanel, BorderLayout.CENTER);
+    logAndButtonPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+    // Create split pane between tabbedPane and logPanel
+    splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tabbedPane, logAndButtonPanel);
+    splitPane.setResizeWeight(0.7); // 80% voor tabs, 20% voor log
+
+    // SplitPane positie herstellen indien aanwezig
+    if (splitPane != null) {
+      int splitPosition = m_params.get_Pref_Split_Posion();
+      if (splitPosition != -1) {
+        splitPane.setDividerLocation(splitPosition);
+      }
+    }
+
     // Layout
     setLayout(new BorderLayout());
-    add(tabbedPane, BorderLayout.CENTER);
-    add(buttonPanel, BorderLayout.SOUTH);
+    add(splitPane, BorderLayout.CENTER);
   }
 
   private void onRecipientsUpdated(List<EmailRecipient> recipients) {
@@ -252,15 +277,14 @@ public class EmailSenderGUI extends JFrame {
     JButton saveBtn = createButton("💾 Opslaan EML", new Color(21, 101, 192), e -> saveAsEml());
     // JButton clearBtn = createButton("🧹 Wissen", new Color(158, 158, 158), e ->
     // clearAll());
-    JButton helpBtn = createButton("❓ Help", new Color(103, 58, 183), e -> showHelp());
-    JButton exitBtn = createButton("🚪 Afsluiten", new Color(198, 40, 40), e -> dispose());
+    // JButton exitBtn = createButton("🚪 Afsluiten", new Color(198, 40, 40), e ->
+    // dispose());
 
     panel.add(testBtn);
     panel.add(sendBtn);
     panel.add(saveBtn);
-//    panel.add(clearBtn);
-    panel.add(helpBtn);
-    panel.add(exitBtn);
+    // panel.add(clearBtn);
+    // panel.add(exitBtn);
 
     return panel;
   }
@@ -321,13 +345,14 @@ public class EmailSenderGUI extends JFrame {
             List<File> attachments = attachmentConfig.getAllAttachmentsForRecipient(recipient.getId());
 
             // Verzend e-mail
-            emailService.sendEmail(recipient.getEmail(), configPanel.getCc(), configPanel.getReplyTo(),
-                configPanel.getAlias(), MailPersonalize.personalizeMessage(messagePanel.getSubject(), recipient),
-                personalizedMessage, attachments);
+            emailService.sendEmail(configPanel.getFrom(), recipient.getEmail(), configPanel.getCC(),
+                configPanel.getReplyTo(), configPanel.getAlias(),
+                MailPersonalize.personalizeMessage(messagePanel.getSubject(), recipient), personalizedMessage,
+                attachments);
 
             // Sla EML op indien gewenst
             if (emlStoragePanel.shouldSaveEml()) {
-              emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(), configPanel.getCc(),
+              emlService.saveAsEml(configPanel.getFrom(), recipient.getEmail(), configPanel.getCC(),
                   configPanel.getReplyTo(), configPanel.getAlias(), messagePanel.getSubject(), personalizedMessage,
                   attachments, emlStoragePanel.getSaveDirectory(), true);
             }
@@ -344,7 +369,7 @@ public class EmailSenderGUI extends JFrame {
 
             // Sla altijd EML op bij fout
             emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(),
-                MailPersonalize.personalizeMessage(messagePanel.getSubject(), recipient), configPanel.getCc(),
+                MailPersonalize.personalizeMessage(messagePanel.getSubject(), recipient), configPanel.getCC(),
                 configPanel.getReplyTo(), configPanel.getAlias(),
                 MailPersonalize.personalizeMessage(messagePanel.getMessage(), recipient),
                 attachmentConfig.getAllAttachmentsForRecipient(recipient.getId()), emlStoragePanel.getSaveDirectory(),
@@ -400,7 +425,7 @@ public class EmailSenderGUI extends JFrame {
 
             List<File> attachments = attachmentConfig.getAllAttachmentsForRecipient(recipient.getId());
 
-            File savedFile = emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(), configPanel.getCc(),
+            File savedFile = emlService.saveAsEml(configPanel.getUsername(), recipient.getEmail(), configPanel.getCC(),
                 configPanel.getReplyTo(), configPanel.getAlias(),
                 MailPersonalize.personalizeMessage(messagePanel.getSubject(), recipient), personalizedMessage,
                 attachments, emlStoragePanel.getSaveDirectory(), true);
@@ -477,6 +502,42 @@ public class EmailSenderGUI extends JFrame {
     return true;
   }
 
+  private void loadWindowProperties() {
+    // Standaard afmetingen
+    int defaultWidth = 800;
+    int defaultHeight = 600;
+
+    // Opgeslagen waarden ophalen (of standaardwaarden)
+    int width = m_params.get_Pref_Window_Width();
+    int height = m_params.get_Pref_Window_Height();
+    int x = m_params.get_Pref_Window_X();
+    int y = m_params.get_Pref_Window_Y();
+
+    // Venstergrootte instellen
+    setSize(width, height);
+
+    // Positie instellen (alleen als opgeslagen)
+    if (x != -1 && y != -1) {
+      setLocation(x, y);
+    } else {
+      setLocationRelativeTo(null); // Centreer bij eerste keer
+    }
+  }
+
+  private void saveWindowProperties() {
+    // Huidige vensterafmetingen opslaan
+    m_params.set_Pref_Window_Width(getWidth());
+    m_params.set_Pref_Window_Heiht(getHeight());
+
+    m_params.set_Pref_Window_X(getX());
+    m_params.set_Pref_Window_Y(getY());
+
+    // SplitPane positie opslaan indien aanwezig
+    if (splitPane != null) {
+      m_params.set_Pref_Split_Posion(splitPane.getDividerLocation());
+    }
+  }
+
   private void clearAll() {
     int confirm = JOptionPane.showConfirmDialog(this,
 
@@ -494,49 +555,6 @@ public class EmailSenderGUI extends JFrame {
 
       logPanel.log("Alle gegevens gewist");
     }
-  }
-
-  private void showHelp() {
-    String helpText = """
-        E-mail Verzender Pro - Help
-
-        1. CONFIGURATIE
-        - Vul SMTP gegevens in (bijv. Gmail, Outlook)
-        - Gebruik App-wachtwoord bij 2-factor authenticatie
-
-        2. ONTVANGERS
-        - Voer e-mailadressen in, één per regel
-        - Gebruik de knoppen om te laden, valideren of duplicaten te verwijderen
-
-        3. BERICHT
-        - Vul onderwerp en bericht in
-        - Gebruik variabelen: {naam}, {email}, {id}, {datum}, {tijd}
-
-        4. BIJLAGEN
-        - Algemene bijlagen: voor alle ontvangers
-        - Persoonlijke bijlagen: specifiek per ontvanger
-        - Selecteer eerst een ontvanger voor persoonlijke bijlagen
-
-        5. EML OPSLAG
-        - Sla e-mails op als .eml bestanden
-        - Kan geopend worden in Outlook, Thunderbird, etc.
-        - Altijd opslaan bij mislukte verzending
-
-        6. KNOPPEN
-        - Verzenden: Stuur alle e-mails
-        - Opslaan EML: Genereer alleen EML bestanden
-        - Testen: Test SMTP verbinding
-        - Wissen: Wis alle ingevoerde gegevens
-        """;
-
-    JTextArea textArea = new JTextArea(helpText);
-    textArea.setEditable(false);
-    textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-
-    JScrollPane scrollPane = new JScrollPane(textArea);
-    scrollPane.setPreferredSize(new Dimension(600, 400));
-
-    JOptionPane.showMessageDialog(this, scrollPane, "Help", JOptionPane.INFORMATION_MESSAGE);
   }
 
   // ===================================================

@@ -20,6 +20,9 @@ public class UserSetting {
   private static final Logger LOGGER = MyLogger.getLogger();
   public static String NodePrefName = "kwee.emailsender";
 
+  private int defaultWidth = 800;
+  private int defaultHeight = 600;
+
   private String c_Level = "Level";
   private String c_LevelValue = "INFO";
   private String c_ConfirmOnExit = "ConfirmOnExit";
@@ -28,6 +31,12 @@ public class UserSetting {
   private String c_LookAndFeelVal = "Nimbus";
   private String c_LogDir = "LogDir";
   private String c_Language = "Language";
+
+  private String c_Pref_Window_Width = "windowWidth";
+  private String c_Pref_Window_Height = "windowHeight";
+  private String c_Pref_Window_X = "windowX";
+  private String c_Pref_Window_Y = "windowY";
+  private String c_Pref_Split_Posion = "splitPosition";
 
   private String c_EmlDirectory = "EML_Directory";
   private String c_Subject = "Subject";
@@ -39,9 +48,10 @@ public class UserSetting {
   private String c_includeAttachments = "IncludeAttachments";
   private String c_mailConfigDirectory = "MailConfigDirectory";
   private String c_MailProvider = "MailProvider";
-  private String c_CC = "CarbonCopy";
+  private String c_From = "From";
   private String c_ReplyTo = "Reply-to";
   private String c_Alias = "Alias";
+  private String c_CC = "CC";
 
   private String m_Level = c_LevelValue;
   private String m_LookAndFeel;
@@ -49,6 +59,12 @@ public class UserSetting {
   private String m_Language = "nl";
   private boolean m_ConfirmOnExit = false;
   private boolean m_toDisk = false;
+
+  private int m_Pref_Window_Width = 0;
+  private int m_Pref_Window_Height = 0;
+  private int m_Pref_Window_X = 0;
+  private int m_Pref_Window_Y = 0;
+  private int m_Pref_Split_Posion = 0;
 
   private String m_EmlDirectory = "";
   private String m_Subject = "";
@@ -61,9 +77,10 @@ public class UserSetting {
   private boolean m_includeAttachments = true;
   private String m_mailConfigDirectory = "";
   private String m_MailProvider = "";
-  private String m_CC = "";
+  private String m_From = "";
   private String m_ReplyTo = "";
   private String m_Alias = "";
+  private String m_CC = "";
 
   private Preferences pref;
   private Preferences userPrefs = Preferences.userRoot();
@@ -95,6 +112,12 @@ public class UserSetting {
     m_Level = pref.get(c_Level, c_LevelValue);
     m_LogDir = pref.get(c_LogDir, "");
 
+    m_Pref_Window_Width = pref.getInt(c_Pref_Window_Width, defaultWidth);
+    m_Pref_Window_Height = pref.getInt(c_Pref_Window_Height, defaultHeight);
+    m_Pref_Window_X = pref.getInt(c_Pref_Window_X, -1);
+    m_Pref_Window_Y = pref.getInt(c_Pref_Window_Y, -1);
+    m_Pref_Split_Posion = pref.getInt(c_Pref_Window_Y, -1);
+
     m_EmlDirectory = pref.get(c_EmlDirectory, "");
     m_Subject = pref.get(c_Subject, "");
     m_Message = pref.get(c_Message, "");
@@ -103,9 +126,11 @@ public class UserSetting {
     m_saveEml = pref.getBoolean(c_saveEml, true);
     m_saveOnFail = pref.getBoolean(c_saveOnFail, true);
     m_includeAttachments = pref.getBoolean(c_includeAttachments, true);
-    m_CC = pref.get(c_CC, "");
+    m_From = pref.get(c_From, "");
     m_ReplyTo = pref.get(c_ReplyTo, "");
     m_Alias = pref.get(c_Alias, "");
+    m_CC = pref.get(c_CC, "");
+
     String mailCnfDir = System.getProperty("user.home") + "\\emailsender";
     m_mailConfigDirectory = pref.get(c_mailConfigDirectory, mailCnfDir);
   }
@@ -175,8 +200,8 @@ public class UserSetting {
     return m_MailProvider;
   }
 
-  public String get_CC() {
-    return m_CC;
+  public String get_From() {
+    return m_From;
   }
 
   public String get_ReplyTo() {
@@ -187,21 +212,49 @@ public class UserSetting {
     return m_Alias;
   }
 
+  public String get_CC() {
+    return m_CC;
+  }
+
+  public int get_Pref_Window_Width() {
+    return m_Pref_Window_Width;
+  }
+
+  public int get_Pref_Window_Height() {
+    return m_Pref_Window_Height;
+  }
+
+  public int get_Pref_Window_X() {
+    return m_Pref_Window_X;
+  }
+
+  public int get_Pref_Window_Y() {
+    return m_Pref_Window_Y;
+  }
+
+  public int get_Pref_Split_Posion() {
+    return m_Pref_Split_Posion;
+  }
+
   // Setters for all parameters.
-  public void set_Subject(String m_Subject) {
-    this.m_Subject = m_Subject;
+  public void set_Subject(String a_Subject) {
+    pref.put(c_Subject, a_Subject);
+    this.m_Subject = a_Subject;
   }
 
-  public void set_Message(String m_Message) {
-    this.m_Message = m_Message;
+  public void set_Message(String a_Message) {
+    pref.put(c_Message, a_Message);
+    this.m_Message = a_Message;
   }
 
-  public void set_LogDir(String m_LogDir) {
-    this.m_LogDir = m_LogDir;
+  public void set_LogDir(String a_LogDir) {
+    pref.put(c_LogDir, a_LogDir);
+    this.m_LogDir = a_LogDir;
   }
 
-  public void set_Language(String m_Language) {
-    this.m_Language = m_Language;
+  public void set_Language(String a_Language) {
+    pref.put(c_Language, a_Language);
+    this.m_Language = a_Language;
   }
 
   public void set_toDisk(boolean a_toDisk) {
@@ -264,9 +317,9 @@ public class UserSetting {
     this.m_MailProvider = a_MailProvider;
   }
 
-  public void set_CC(String a_CC) {
-    pref.put(c_CC, a_CC);
-    this.m_CC = a_CC;
+  public void set_From(String a_From) {
+    pref.put(c_From, a_From);
+    this.m_From = a_From;
   }
 
   public void set_ReplyTo(String a_ReplyTo) {
@@ -277,6 +330,36 @@ public class UserSetting {
   public void set_Alias(String a_Alias) {
     pref.put(c_Alias, a_Alias);
     this.m_Alias = a_Alias;
+  }
+
+  public void set_CC(String a_cc) {
+    pref.put(c_CC, a_cc);
+    this.m_CC = a_cc;
+  }
+
+  public void set_Pref_Window_Width(int a_Pref_Window_Width) {
+    pref.putInt(c_Pref_Window_Width, a_Pref_Window_Width);
+    this.m_Pref_Window_Width = a_Pref_Window_Width;
+  }
+
+  public void set_Pref_Window_Heiht(int a_Pref_Window_Height) {
+    pref.putInt(c_Pref_Window_Height, a_Pref_Window_Height);
+    this.m_Pref_Window_Height = a_Pref_Window_Height;
+  }
+
+  public void set_Pref_Window_X(int a_Pref_Window_X) {
+    pref.putInt(c_Pref_Window_X, a_Pref_Window_X);
+    this.m_Pref_Window_X = a_Pref_Window_X;
+  }
+
+  public void set_Pref_Window_Y(int a_Pref_Window_Y) {
+    pref.putInt(c_Pref_Window_Y, a_Pref_Window_Y);
+    this.m_Pref_Window_Y = a_Pref_Window_Y;
+  }
+
+  public void set_Pref_Split_Posion(int a_Pref_Split_Posion) {
+    pref.putInt(c_Pref_Split_Posion, a_Pref_Split_Posion);
+    this.m_Pref_Split_Posion = a_Pref_Split_Posion;
   }
 
   /**
@@ -291,6 +374,12 @@ public class UserSetting {
       pref.put(c_Level, m_Level);
       pref.put(c_LogDir, m_LogDir);
 
+      pref.putInt(c_Pref_Window_Width, m_Pref_Window_Width);
+      pref.putInt(c_Pref_Window_Height, m_Pref_Window_Width);
+      pref.putInt(c_Pref_Window_X, m_Pref_Window_X);
+      pref.putInt(c_Pref_Window_Y, m_Pref_Window_Y);
+      pref.putInt(c_Pref_Window_Y, m_Pref_Split_Posion);
+
       pref.put(c_EmlDirectory, m_EmlDirectory);
       pref.put(c_Subject, m_Subject);
       pref.put(c_Message, m_Message);
@@ -301,9 +390,10 @@ public class UserSetting {
       pref.putBoolean(c_includeAttachments, m_includeAttachments);
       pref.put(c_mailConfigDirectory, m_mailConfigDirectory);
       pref.put(c_MailProvider, m_MailProvider);
-      pref.put(c_CC, m_CC);
+      pref.put(c_From, m_From);
       pref.put(c_ReplyTo, m_ReplyTo);
       pref.put(c_Alias, m_Alias);
+      pref.put(c_CC, m_CC);
 
       pref.flush();
     } catch (BackingStoreException e) {
@@ -327,6 +417,12 @@ public class UserSetting {
       freezeInstance.set_Level(Level.parse(m_Level));
       freezeInstance.set_LogDir(m_LogDir);
 
+      freezeInstance.set_Pref_Window_Width(m_Pref_Window_Width);
+      freezeInstance.set_Pref_Window_Heiht(m_Pref_Window_Height);
+      freezeInstance.set_Pref_Window_X(m_Pref_Window_X);
+      freezeInstance.set_Pref_Window_Y(m_Pref_Window_Y);
+      freezeInstance.set_Pref_Split_Posion(m_Pref_Split_Posion);
+
       freezeInstance.set_EmlDirectory(m_EmlDirectory);
       freezeInstance.set_Message(m_Message);
       freezeInstance.set_Subject(m_Subject);
@@ -337,9 +433,10 @@ public class UserSetting {
       freezeInstance.set_includeAttachments(m_includeAttachments);
       freezeInstance.set_mailConfigDirectory(m_mailConfigDirectory);
       freezeInstance.set_MailProvider(m_MailProvider);
-      freezeInstance.set_CC(m_CC);
+      freezeInstance.set_From(m_From);
       freezeInstance.set_ReplyTo(m_ReplyTo);
       freezeInstance.set_Alias(m_Alias);
+      freezeInstance.set_CC(m_CC);
 
     } else {
       LOGGER.log(Level.INFO, "Nothing to freeze....");
@@ -359,6 +456,12 @@ public class UserSetting {
       uniqueInstance.set_Level(freezeInstance.get_Level());
       uniqueInstance.set_LogDir(freezeInstance.get_LogDir());
 
+      uniqueInstance.set_Pref_Window_Width(freezeInstance.get_Pref_Window_Width());
+      uniqueInstance.set_Pref_Window_Heiht(freezeInstance.get_Pref_Window_Height());
+      uniqueInstance.set_Pref_Window_X(freezeInstance.get_Pref_Window_X());
+      uniqueInstance.set_Pref_Window_Y(freezeInstance.get_Pref_Window_Y());
+      uniqueInstance.set_Pref_Split_Posion(freezeInstance.get_Pref_Split_Posion());
+
       uniqueInstance.set_EmlDirectory(freezeInstance.get_EmlDirectory());
       uniqueInstance.set_Subject(freezeInstance.get_Subject());
       uniqueInstance.set_Message(freezeInstance.get_Message());
@@ -369,9 +472,10 @@ public class UserSetting {
       uniqueInstance.set_includeAttachments(freezeInstance.is_includeAttachments());
       uniqueInstance.set_mailConfigDirectory(freezeInstance.get_mailConfigDirectory());
       uniqueInstance.set_MailProvider(freezeInstance.get_MailProvider());
-      uniqueInstance.set_CC(freezeInstance.get_CC());
+      uniqueInstance.set_From(freezeInstance.get_From());
       uniqueInstance.set_ReplyTo(freezeInstance.get_ReplyTo());
       uniqueInstance.set_Alias(freezeInstance.get_Alias());
+      uniqueInstance.set_CC(freezeInstance.get_CC());
 
       freezeInstance = null;
     } else {
@@ -395,6 +499,12 @@ public class UserSetting {
     l_line = l_line + c_Level + ": " + m_Level + "\n";
     l_line = l_line + c_LogDir + ": " + m_LogDir + "\n";
 
+    l_line = l_line + c_Pref_Window_Width + ": " + m_Pref_Window_Width + "\n";
+    l_line = l_line + c_Pref_Window_Height + ": " + m_Pref_Window_Width + "\n";
+    l_line = l_line + c_Pref_Window_X + ": " + m_Pref_Window_X + "\n";
+    l_line = l_line + c_Pref_Window_Y + ": " + m_Pref_Window_Y + "\n";
+    l_line = l_line + c_Pref_Window_Y + ": " + m_Pref_Split_Posion + "\n";
+
     l_line = l_line + c_EmlDirectory + ": " + m_EmlDirectory + "\n";
     l_line = l_line + c_Subject + ": " + m_Subject + "\n";
     l_line = l_line + c_Message + ": " + m_Message + "\n";
@@ -405,9 +515,10 @@ public class UserSetting {
     l_line = l_line + c_includeAttachments + ": " + m_includeAttachments + "\n";
     l_line = l_line + c_mailConfigDirectory + ": " + m_mailConfigDirectory + "\n";
     l_line = l_line + c_MailProvider + ": " + m_MailProvider + "\n";
-    l_line = l_line + c_CC + ": " + m_CC + "\n";
+    l_line = l_line + c_From + ": " + m_From + "\n";
     l_line = l_line + c_ReplyTo + ": " + m_ReplyTo + "\n";
     l_line = l_line + c_Alias + ": " + m_Alias + "\n";
+    l_line = l_line + c_CC + ": " + m_CC + "\n";
 
     return l_line;
   }

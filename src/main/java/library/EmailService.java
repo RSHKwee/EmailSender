@@ -31,7 +31,7 @@ public class EmailService {
     this.password = password;
   }
 
-  public void sendEmail(String to, String cc, String replyTo, String alias, String subject, String message,
+  public void sendEmail(String from, String to, String cc, String replyTo, String alias, String subject, String message,
       List<File> attachments) throws MessagingException {
 
     Properties props = new Properties();
@@ -41,6 +41,9 @@ public class EmailService {
     props.put("mail.smtp.starttls.enable", "true");
     props.put("mail.smtp.starttls.required", "true");
 
+    // props.put("mail.smtp.ssl.protocols", "TLSv1.2 TLSv1.3");
+    // props.put("mail.smtp.auth.mechanisms", "XOAUTH2 PLAIN");
+
     Session session = Session.getInstance(props, new Authenticator() {
       @Override
       protected PasswordAuthentication getPasswordAuthentication() {
@@ -48,7 +51,7 @@ public class EmailService {
       }
     });
 
-    MimeMessage mimeMessage = MailMessage.createMail(session, username, to, cc, replyTo, subject, message, attachments,
+    MimeMessage mimeMessage = MailMessage.createMail(session, from, to, cc, replyTo, subject, message, attachments,
         alias);
 
     try {
@@ -102,8 +105,8 @@ public class EmailService {
   }
 
   // Extra helper methoden
-  public void sendBulkEmails(List<String> recipients, String cc, String replyTo, String alias, String subject,
-      String messageTemplate, List<File> commonAttachments,
+  public void sendBulkEmails(String from, List<String> recipients, String cc, String replyTo, String alias,
+      String subject, String messageTemplate, List<File> commonAttachments,
       java.util.function.Function<String, List<File>> personalAttachmentsProvider) {
 
     LOGGER.log(Level.INFO, "Bulk verzending gestart voor " + recipients.size() + " ontvangers");
@@ -120,7 +123,7 @@ public class EmailService {
         allAttachments.addAll(personalAttachments);
 
         // Verzend de e-mail
-        sendEmail(recipient, cc, replyTo, alias, subject, messageTemplate, allAttachments);
+        sendEmail(from, recipient, cc, replyTo, alias, subject, messageTemplate, allAttachments);
 
         // Kleine pauze om rate limiting te voorkomen
         Thread.sleep(1000);

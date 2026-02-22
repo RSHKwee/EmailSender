@@ -29,9 +29,10 @@ public class ConfigPanel extends JPanel {
   private JTextField usernameField;
   private JPasswordField passwordField;
 
-  private JTextField ccField;
+  private JTextField fromField;
   private JTextField replyToField;
   private JTextField aliasField;
+  private JTextField ccField;
 
   private MailServerSettings mailSrvSetting = new MailServerSettings();
 
@@ -112,11 +113,11 @@ public class ConfigPanel extends JPanel {
 
     gbc.gridy = 6;
     gbc.gridx = 0;
-    add(new JLabel("cc adres:"), gbc);
+    add(new JLabel("from adres:"), gbc);
     gbc.gridx = 1;
-    ccField = new JTextField(25);
-    addDocumentListenerToSave(ccField, "carboncopy");
-    add(ccField, gbc);
+    fromField = new JTextField(25);
+    addDocumentListenerToSave(fromField, "from");
+    add(fromField, gbc);
 
     gbc.gridy = 7;
     gbc.gridx = 0;
@@ -133,6 +134,15 @@ public class ConfigPanel extends JPanel {
     aliasField = new JTextField(25);
     addDocumentListenerToSave(aliasField, "alias");
     add(aliasField, gbc);
+
+    gbc.gridy = 9;
+    gbc.gridx = 0;
+    add(new JLabel("cc:"), gbc);
+    gbc.gridx = 1;
+    ccField = new JTextField(25);
+    addDocumentListenerToSave(ccField, "cc");
+    add(ccField, gbc);
+
   }
 
   private void setProviderConfig(String a_provider) {
@@ -161,7 +171,7 @@ public class ConfigPanel extends JPanel {
         portField.setText("587");
         break;
       }
-      ccField.setText(m_params.get_CC());
+      fromField.setText(m_params.get_From());
       replyToField.setText(m_params.get_ReplyTo());
       aliasField.setText(m_params.get_Alias());
     } else {
@@ -169,31 +179,39 @@ public class ConfigPanel extends JPanel {
       portField.setText(String.valueOf(mailSrvSetting.getPort()));
       usernameField.setText(mailSrvSetting.getUsername());
       passwordField.setText(mailSrvSetting.getPassword());
-      ccField.setText(m_params.get_CC());
+      if (m_params.get_From().isBlank()) {
+        fromField.setText(mailSrvSetting.getUsername());
+      } else {
+        fromField.setText(m_params.get_From());
+      }
       replyToField.setText(m_params.get_ReplyTo());
       aliasField.setText(m_params.get_Alias());
     }
   }
 
-  public void setSMTPConfig(String host, int port, String username, String password, String cc, String replyTo,
+  public void setSMTPConfig(String host, int port, String username, String password, String from, String replyTo,
       String alias) {
     mailSrvSetting.setId(m_params.get_MailProvider());
     if (mailSrvSetting.getPort() == -1) {
-      smtpField.setText(host);
+      smtpField.setText(host.trim());
       portField.setText(String.valueOf(port));
-      usernameField.setText(username);
-      passwordField.setText(password);
-      ccField.setText(cc);
-      replyToField.setText(replyTo);
-      aliasField.setText(alias);
+      usernameField.setText(username.trim());
+      passwordField.setText(password.trim());
+      fromField.setText(from.trim());
+      replyToField.setText(replyTo.trim());
+      aliasField.setText(alias.trim());
     } else {
-      smtpField.setText(mailSrvSetting.getHost());
-      portField.setText(String.valueOf(mailSrvSetting.getPort()));
-      usernameField.setText(mailSrvSetting.getUsername());
-      passwordField.setText(mailSrvSetting.getPassword());
-      ccField.setText(m_params.get_CC());
-      replyToField.setText(m_params.get_ReplyTo());
-      aliasField.setText(m_params.get_Alias());
+      smtpField.setText(mailSrvSetting.getHost().trim());
+      portField.setText(String.valueOf(mailSrvSetting.getPort()).trim());
+      usernameField.setText(mailSrvSetting.getUsername().trim());
+      passwordField.setText(mailSrvSetting.getPassword().trim());
+      if (m_params.get_From().isBlank()) {
+        fromField.setText(mailSrvSetting.getUsername());
+      } else {
+        fromField.setText(m_params.get_From());
+      }
+      replyToField.setText(m_params.get_ReplyTo().trim());
+      aliasField.setText(m_params.get_Alias().trim());
     }
   }
 
@@ -218,8 +236,8 @@ public class ConfigPanel extends JPanel {
     return new String(passwordField.getPassword());
   }
 
-  public String getCc() {
-    return ccField.getText();
+  public String getFrom() {
+    return fromField.getText();
   }
 
   public String getReplyTo() {
@@ -228,6 +246,10 @@ public class ConfigPanel extends JPanel {
 
   public String getAlias() {
     return aliasField.getText();
+  }
+
+  public String getCC() {
+    return ccField.getText();
   }
 
   private void addDocumentListenerToSave(JTextField field, String propertyName) {
@@ -260,25 +282,28 @@ public class ConfigPanel extends JPanel {
   private void saveField(String propertyName, String value) {
     switch (propertyName) {
     case "smtpServer":
-      mailSrvSetting.setHost(value);
+      mailSrvSetting.setHost(value.trim());
       break;
     case "smtpPort":
-      mailSrvSetting.setPort(Integer.parseInt(value));
+      mailSrvSetting.setPort(Integer.parseInt(value.trim()));
       break;
     case "username":
-      mailSrvSetting.setUsername(value);
+      mailSrvSetting.setUsername(value.trim());
       break;
     case "password":
-      mailSrvSetting.setPassword(value);
+      mailSrvSetting.setPassword(value.trim());
       break;
-    case "carboncopy":
-      m_params.set_CC(value);
+    case "from":
+      m_params.set_From(value.trim());
       break;
     case "replyto":
-      m_params.set_ReplyTo(value);
+      m_params.set_ReplyTo(value.trim());
       break;
     case "alias":
-      m_params.set_Alias(value);
+      m_params.set_Alias(value.trim());
+      break;
+    case "cc":
+      m_params.set_CC(value.trim());
       break;
     }
     m_params.save();

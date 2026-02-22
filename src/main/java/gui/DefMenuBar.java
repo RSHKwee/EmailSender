@@ -1,6 +1,7 @@
 package gui;
 
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,6 +18,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -285,10 +288,13 @@ public class DefMenuBar {
             // Open the help file with the default viewer
             Desktop.getDesktop().open(helpFile);
           } catch (IOException e1) {
-            e1.printStackTrace();
+            LOGGER.log(Level.WARNING, e1.getMessage());
+            // e1.printStackTrace();
           }
         } else {
-          LOGGER.log(Level.INFO, bundle.getMessage("HelpFileNotFound", helpFile.getAbsolutePath()));
+          showHelp(hoofdFrame);
+          // LOGGER.log(Level.INFO, bundle.getMessage("HelpFileNotFound",
+          // helpFile.getAbsolutePath()));
         }
       }
     });
@@ -307,4 +313,48 @@ public class DefMenuBar {
 
     return menuBar;
   }
+
+  private void showHelp(JFrame hoofdFrame) {
+    String helpText = """
+        E-mail Verzender Pro - Help
+
+        1. CONFIGURATIE
+        - Vul SMTP gegevens in (bijv. Gmail, Outlook)
+        - Gebruik App-wachtwoord bij 2-factor authenticatie
+
+        2. ONTVANGERS
+        - Voer e-mailadressen in, één per regel
+        - Gebruik de knoppen om te laden, valideren of duplicaten te verwijderen
+
+        3. BERICHT
+        - Vul onderwerp en bericht in
+        - Gebruik variabelen: {naam}, {email}, {id}, {datum}, {tijd}
+
+        4. BIJLAGEN
+        - Algemene bijlagen: voor alle ontvangers
+        - Persoonlijke bijlagen: specifiek per ontvanger
+        - Selecteer eerst een ontvanger voor persoonlijke bijlagen
+
+        5. EML OPSLAG
+        - Sla e-mails op als .eml bestanden
+        - Kan geopend worden in Outlook, Thunderbird, etc.
+        - Altijd opslaan bij mislukte verzending
+
+        6. KNOPPEN
+        - Verzenden: Stuur alle e-mails
+        - Opslaan EML: Genereer alleen EML bestanden
+        - Testen: Test SMTP verbinding
+        - Wissen: Wis alle ingevoerde gegevens
+        """;
+
+    JTextArea textArea = new JTextArea(helpText);
+    textArea.setEditable(false);
+    textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+    JScrollPane scrollPane = new JScrollPane(textArea);
+    scrollPane.setPreferredSize(new Dimension(600, 400));
+
+    JOptionPane.showMessageDialog(hoofdFrame, scrollPane, "Help", JOptionPane.INFORMATION_MESSAGE);
+  }
+
 }
