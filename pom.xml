@@ -7,18 +7,17 @@
     
     <groupId>kwee.email.sender</groupId>
     <artifactId>emailsenderpro</artifactId>
-    <version>0.0.1.0</version>
+    <version>${revision}</version>
     <packaging>jar</packaging>
     
     <properties> 
        <project.description>Email sender</project.description>
-       <com.fasterxml.jackson.core.version>2.17.2</com.fasterxml.jackson.core.version> 
     </properties>
     
     <parent>
       <groupId>kwee</groupId>
 	  <artifactId>aggregator</artifactId>
-	  <version>1.1.0.3</version>
+	  <version>${revision}</version>
 	  <relativePath>../pom.xml</relativePath>
     </parent>
     
@@ -26,50 +25,48 @@
       <dependency>
 	    <groupId>kwee</groupId>
 	    <artifactId>library</artifactId>
-	    <version>${kweeLibrary.version}</version>
+	    <version>${revision}</version>
 	  </dependency>
-
 	  
       <!-- Jakarta Mail API -->
-        <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-        
-        <!-- Jakarta Activation API (nodig voor bijlagen) -->
-        <dependency>
-            <groupId>com.sun.activation</groupId>
-            <artifactId>jakarta.activation</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-        
-        <!-- Optional: For better UI -->
-        <dependency>
-            <groupId>com.formdev</groupId>
-            <artifactId>flatlaf</artifactId>
-            <version>3.0</version>
-            <optional>true</optional>
-        </dependency>
-        
-        <!-- Optional: For CSV/Excel support -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-csv</artifactId>
-            <version>1.9.0</version>
-            <optional>true</optional>
-        </dependency>
-        
-        <dependency>
-           <groupId>com.fasterxml.jackson.core</groupId>
-           <artifactId>jackson-databind</artifactId>
-           <version>${com.fasterxml.jackson.core.version}</version>
-         </dependency>
-         <dependency>
-           <groupId>com.fasterxml.jackson.dataformat</groupId>
-           <artifactId>jackson-dataformat-yaml</artifactId>
-           <version>${com.fasterxml.jackson.core.version}</version>
-         </dependency>
+      <dependency>
+        <groupId>com.sun.mail</groupId>
+        <artifactId>jakarta.mail</artifactId>
+        <version>${jakarta-mail.version}</version>
+      </dependency>
+      
+      <!-- Jakarta Activation API (nodig voor bijlagen) -->
+      <dependency>
+        <groupId>com.sun.activation</groupId>
+        <artifactId>jakarta.activation</artifactId>
+        <version>${jakarta-activation.version}</version>
+      </dependency>
+      
+      <!-- Optional: For better UI -->
+      <dependency>
+        <groupId>com.formdev</groupId>
+        <artifactId>flatlaf</artifactId>
+        <version>${com-formdev-flatlaf.version}</version>
+        <optional>true</optional>
+      </dependency>
+      
+      <!-- Optional: For CSV/Excel support -->
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-csv</artifactId>
+        <version>${org-apache-commons-commons-csv.version}</version>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.core</groupId>
+         <artifactId>jackson-databind</artifactId>
+         <version>${com.fasterxml.jackson.core.version}</version>
+       </dependency>
+       <dependency>
+         <groupId>com.fasterxml.jackson.dataformat</groupId>
+         <artifactId>jackson-dataformat-yaml</artifactId>
+         <version>${com.fasterxml.jackson.core.version}</version>
+       </dependency>
     </dependencies>
     
     <build>
@@ -87,7 +84,7 @@
         <configuration>
            <!-- Deze configuratie zorgt ervoor dat @...@ placeholders werken -->
            <delimiters>
-            <delimiter>@</delimiter>
+             <delimiter>@</delimiter>
           </delimiters>
           <useDefaultDelimiters>false</useDefaultDelimiters>
         </configuration>
@@ -266,7 +263,7 @@
                 <resource>
                   <directory>${project.basedir}/help/en</directory>
                   <includes>
-                    <include>osmmapper.chm</include>
+                    <include>emailsender.chm</include>
                   </includes>
                 </resource>
               </resources>
@@ -392,7 +389,7 @@
               <executable>BuildTools\HelpChm.cmd</executable>
               <workingDirectory>help/en</workingDirectory>
               <arguments>
-                <argument>mailsender.hhp</argument>
+                <argument>emailsender.hhp</argument>
               </arguments>
             </configuration>          
           </execution>
@@ -406,7 +403,7 @@
               <executable>BuildTools\HelpChm.cmd</executable>
               <workingDirectory>help/nl</workingDirectory>
               <arguments>
-                <argument>mailsender.hhp</argument>
+                <argument>emailsender.hhp</argument>
               </arguments>
             </configuration>          
           </execution>	  
@@ -475,10 +472,10 @@
                   <delete dir="${project.basedir}\BuildTools"/>
                   <delete file="${project.basedir}\Library.iss"/>   
                   <delete file="${project.build.directory}\osmmapper-${project.version}.jar"/>
-                  <delete file="${project.build.directory}\USB\Programs\OSMMapper\app\osmmapper.exe"/>
+                  <delete file="${project.build.directory}\Programs\OSMMapper\app\osmmapper.exe"/>
     <!--              <delete file="${project.build.directory}\USB\Programs\OSMMapper\app\osmmapper_v${project.version}_setup.exe"/> -->
-                  <delete file="${project.build.directory}\USB\Programs\OSMMapper\app\osmmapper-${project.version}.jar"/>
-                  <delete dir="${project.build.directory}\USB\Programs\OSMMapper\app\USB"/>
+                  <delete file="${project.build.directory}\Programs\OSMMapper\app\osmmapper-${project.version}.jar"/>
+                  <delete dir="${project.build.directory}\Programs\OSMMapper\app\USB"/>
                 </target>
               </configuration>
           </execution>
