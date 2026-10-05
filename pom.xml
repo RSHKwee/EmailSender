@@ -453,6 +453,7 @@
           <description>Email sender</description>                          
         </configuration>
       </plugin>   
+      <!--
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <version>${maven-antrun-pluginversion}</version>
@@ -469,7 +470,6 @@
                   <delete file="${project.basedir}\Library.iss"/>   
                   <delete file="${project.build.directory}\osmmapper-${project.version}.jar"/>
                   <delete file="${project.build.directory}\Programs\OSMMapper\app\osmmapper.exe"/>
-    <!--              <delete file="${project.build.directory}\USB\Programs\OSMMapper\app\osmmapper_v${project.version}_setup.exe"/> -->
                   <delete file="${project.build.directory}\Programs\OSMMapper\app\osmmapper-${project.version}.jar"/>
                   <delete dir="${project.build.directory}\Programs\OSMMapper\app\USB"/>
                 </target>
@@ -477,7 +477,8 @@
           </execution>
         </executions>
       </plugin>  
-    </plugins>
+    -->
+	</plugins>
     <!--    </pluginManagement> -->
   </build>
   <distributionManagement>
