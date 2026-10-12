@@ -8,12 +8,9 @@
     <groupId>kwee.email.sender</groupId>
     <artifactId>emailsenderpro</artifactId>
     <version>${revision}</version>
+    <description>Email sender</description>
     <packaging>jar</packaging>
-    
-    <properties> 
-       <project.description>Email sender</project.description>
-    </properties>
-    
+        
     <parent>
       <groupId>kwee</groupId>
 	  <artifactId>aggregator</artifactId>
