@@ -5,7 +5,6 @@
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
-    <groupId>kwee.email.sender</groupId>
     <artifactId>emailsenderpro</artifactId>
     <version>${revision}</version>
     <description>Email sender</description>
@@ -65,16 +64,17 @@
          <version>${com.fasterxml.jackson.core.version}</version>
        </dependency>
     </dependencies>
-    
+	
+    <!-- Bouw instructies -->
     <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-      </resource>
-    </resources>  	
-    <plugins>
-
+      <resources>
+        <resource>
+          <directory>src/main/resources</directory>
+          <filtering>true</filtering>
+        </resource>
+      </resources>
+	  
+      <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -105,7 +105,7 @@
         <executions>
           <!-- Execution 1: Maak uber-jar in package fase -->
           <execution>
-            <id>create-uber-jar</id>
+            <id>jar-with-deps</id>
             <phase>package</phase>
             <goals>
               <goal>single</goal>
@@ -127,20 +127,19 @@
           
           <!-- Execution 2: Maak distributie in install fase -->  
           <execution>
-            <id>create-distribution</id>
-            <phase>deploy</phase>
+            <id>zip-programs</id>
+            <phase>install</phase>
             <goals>
               <goal>single</goal>
             </goals>
             <configuration>
-              <finalName>MailSender</finalName>
+              <finalName>Programs-archive</finalName>
               <appendAssemblyId>false</appendAssemblyId>
               <descriptors>
                 <descriptor>src/assembly/distribution.xml</descriptor>
               </descriptors>
             </configuration>
           </execution>
-		  
         </executions>
       </plugin>
       
@@ -418,25 +417,25 @@
         </executions>
       </plugin>
 	  <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-jarsigner-plugin</artifactId>
-          <version>${maven-jarsigner-plugin.version}</version>
-          <executions>
-            <execution>
-              <id>sign</id>
-              <phase>package</phase>
-              <goals>
-                <goal>sign</goal>
-              </goals>
-              <configuration>
-                <file>${project.build.directory}/mailsender-jar-with-dependencies.jar</file>
-	  		  <keystore>keystore.jks</keystore>
-                <alias>RSHK</alias>
-                <storepass>${keystore.password}</storepass>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jarsigner-plugin</artifactId>
+        <version>${maven-jarsigner-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>sign</id>
+            <phase>package</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+            <configuration>
+              <file>${project.build.directory}/mailsender-jar-with-dependencies.jar</file>
+	 	      <keystore>keystore.jks</keystore>
+              <alias>RSHK</alias>
+              <storepass>${keystore.password}</storepass>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <!-- 2. JPackage Plugin voor zelfstandige app op USB -->
       <plugin>
         <groupId>org.panteleyev</groupId>
@@ -459,19 +458,15 @@
           <input>${project.build.directory}</input>
           <mainJar>mailsender-jar-with-dependencies.jar</mainJar>
           <runtimeImage>${java.home}</runtimeImage>
-          <destination>${project.build.directory}/USB/Programs</destination>
+          <destination>${project.build.directory}/Programs</destination>
          
-          <!-- BELANGRIJK: Verwijzen naar je custom runtime -->
-          <!--       <runtimeImage>${project.basedir}/../jre</runtimeImage> -->
-          
-          <!-- Optionele metadata -->
           <appVersion>${project.version}</appVersion>
           <vendor>RSH Kwee</vendor>
           <copyright>${project.copyright.text}</copyright>
           <description>Email sender</description>                          
         </configuration>
       </plugin>   
-      <!--
+
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <version>${maven-antrun-pluginversion}</version>
@@ -487,16 +482,43 @@
                   <delete dir="${project.basedir}\BuildTools"/>
                   <delete file="${project.basedir}\Library.iss"/>   
                   <delete file="${project.basedir}\keystore.jks"/>   
-                  <delete file="${project.build.directory}\osmmapper-${project.version}.jar"/>
-                  <delete file="${project.build.directory}\Programs\OSMMapper\app\osmmapper.exe"/>
-                  <delete file="${project.build.directory}\Programs\OSMMapper\app\osmmapper-${project.version}.jar"/>
-                  <delete dir="${project.build.directory}\Programs\OSMMapper\app\USB"/>
+                  <delete file="${project.build.directory}\mailsender-${project.version}.jar"/>
+                  <delete file="${project.build.directory}\Programs\mailsender\app\mailsender.exe"/>
+                  <delete file="${project.build.directory}\Programs\mailsender\app\mailsender-${project.version}.jar"/>
+                  <delete dir="${project.build.directory}\Programs\mailsender\app\USB"/>
                 </target>
               </configuration>
           </execution>
+           <execution>
+             <id>clean-zip</id>
+             <phase>install</phase>
+             <goals>
+               <goal>run</goal>
+             </goals>
+             <configuration>
+               <target>
+                 <!-- 1. Zip uitpakken naar tijdelijke map -->
+                 <unzip src="${project.build.directory}/Programs-archive.zip"
+                        dest="${project.build.directory}/zip-temp/usb"/>
+                 
+                 <!-- 2. Verwijder de bestanden die er niet in horen -->
+                 <delete file="${project.build.directory}/zip-temp/usb/mailsender/app/mailsender.exe"/>
+                 <delete file="${project.build.directory}/zip-temp/usb/mailsender/app/mailsender_v${project.version}_setup.exe"/>
+                 <delete file="${project.build.directory}/zip-temp/usb/mailsender/app/mailsender-${project.version}.jar"/>
+                 <delete dir="${project.build.directory}/zip-temp/usb/mailsender/app/Programs"/>
+                 
+                 <!-- 3. Zip opnieuw maken (oude zip wordt overschreven) -->
+                 <zip destfile="${project.build.directory}/mailsenderStandalone-${project.version}.zip"
+                      basedir="${project.build.directory}/zip-temp"/>
+                 
+                 <!-- 4. Tijdelijke map opruimen -->
+                 <delete dir="${project.build.directory}/zip-temp"/>
+                 <delete file="${project.build.directory}/Programs-archive.zip"/>				 
+               </target>
+             </configuration>
+           </execution>	
         </executions>
       </plugin>  
-    -->
 	</plugins>
     <!--    </pluginManagement> -->
   </build>
