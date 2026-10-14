@@ -482,9 +482,9 @@
                   <delete dir="${project.basedir}\BuildTools"/>
                   <delete file="${project.basedir}\Library.iss"/>   
                   <delete file="${project.basedir}\keystore.jks"/>   
-                  <delete file="${project.build.directory}\mailsender-${project.version}.jar"/>
+                  <delete file="${project.build.directory}\mailsenderpro-${project.version}.jar"/>
                   <delete file="${project.build.directory}\Programs\mailsender\app\mailsender.exe"/>
-                  <delete file="${project.build.directory}\Programs\mailsender\app\mailsender-${project.version}.jar"/>
+                  <delete file="${project.build.directory}\Programs\mailsender\app\mailsenderpro-${project.version}.jar"/>
                   <delete dir="${project.build.directory}\Programs\mailsender\app\USB"/>
                 </target>
               </configuration>
@@ -504,7 +504,7 @@
                  <!-- 2. Verwijder de bestanden die er niet in horen -->
                  <delete file="${project.build.directory}/zip-temp/usb/mailsender/app/mailsender.exe"/>
                  <delete file="${project.build.directory}/zip-temp/usb/mailsender/app/mailsender_v${project.version}_setup.exe"/>
-                 <delete file="${project.build.directory}/zip-temp/usb/mailsender/app/mailsender-${project.version}.jar"/>
+                 <delete file="${project.build.directory}/zip-temp/usb/mailsender/app/mailsenderpro-${project.version}.jar"/>
                  <delete dir="${project.build.directory}/zip-temp/usb/mailsender/app/Programs"/>
                  
                  <!-- 3. Zip opnieuw maken (oude zip wordt overschreven) -->
