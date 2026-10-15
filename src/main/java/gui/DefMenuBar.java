@@ -1,6 +1,5 @@
 package gui;
 
-import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -25,6 +24,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import kwee.library.ApplicationMessages;
+import kwee.library.ChmOpener;
 import kwee.library.swing.AboutWindow;
 import kwee.library.swing.ShowPreferences;
 import kwee.logger.MyLogger;
@@ -285,16 +285,12 @@ public class DefMenuBar {
 
         if (helpFile.exists()) {
           try {
-            // Open the help file with the default viewer
-            Desktop.getDesktop().open(helpFile);
-          } catch (IOException e1) {
-            LOGGER.log(Level.WARNING, e1.getMessage());
-            // e1.printStackTrace();
+            ChmOpener.openChm(helpFile);
+          } catch (Exception e1) {
+            LOGGER.log(Level.INFO, e1.getMessage());
           }
         } else {
-          showHelp(hoofdFrame);
-          // LOGGER.log(Level.INFO, bundle.getMessage("HelpFileNotFound",
-          // helpFile.getAbsolutePath()));
+          LOGGER.log(Level.INFO, bundle.getMessage("HelpFileNotFound", helpFile.getAbsolutePath()));
         }
       }
     });
