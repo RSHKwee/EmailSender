@@ -457,7 +457,6 @@
           <icon>src/main/resources/MailSender.ico</icon>
           <input>${project.build.directory}</input>
           <mainJar>mailsender-jar-with-dependencies.jar</mainJar>
-          <runtimeImage>${java.home}</runtimeImage>
           <destination>${project.build.directory}/Programs</destination>
          
           <appVersion>${project.version}</appVersion>
