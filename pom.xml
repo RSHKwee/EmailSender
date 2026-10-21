@@ -541,7 +541,7 @@
     <repository>
       <id>github</id>
       <name>GitHub Packages</name>
-      <url>https://maven.pkg.github.com/RSHKwee/osmmapper</url>
+      <url>https://maven.pkg.github.com/RSHKwee/emailsender</url>
     </repository>
     <!-- Upload to Github ^-->
   </distributionManagement>
