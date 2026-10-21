@@ -1,10 +1,5 @@
 package sandbox;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-
-import library.PasswordEncryptor;
-
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,6 +7,11 @@ import java.util.Map;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
+import kwee.mailSender.library.PasswordEncryptor;
 
 public class YamlConfigLoader {
   private Map<String, Object> config;

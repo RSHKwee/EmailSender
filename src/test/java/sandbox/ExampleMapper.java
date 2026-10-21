@@ -1,16 +1,16 @@
 package sandbox;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-
-import library.MailServerSettings;
-import library.MailServersConfig;
-import library.MailServersConfig.EmailServer;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
+import kwee.mailSender.library.MailServerSettings;
+import kwee.mailSender.library.MailServersConfig;
+import kwee.mailSender.library.MailServersConfig.EmailServer;
 
 //Gebruik:
 public class ExampleMapper {

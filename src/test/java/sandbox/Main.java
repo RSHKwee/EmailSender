@@ -13,8 +13,8 @@ import javax.crypto.spec.SecretKeySpec;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
-import library.KeyGeneratorUtil;
-import library.PasswordEncryptor;
+import kwee.mailSender.library.KeyGeneratorUtil;
+import kwee.mailSender.library.PasswordEncryptor;
 
 public class Main {
 

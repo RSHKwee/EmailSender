@@ -5,7 +5,7 @@
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
-    <artifactId>emailsenderpro</artifactId>
+    <artifactId>emailsender</artifactId>
     <version>${revision}</version>
     <description>Email sender</description>
     <packaging>jar</packaging>
@@ -114,7 +114,7 @@
               <archive>
                 <manifest>
                   <addClasspath>true</addClasspath>
-                  <mainClass>main.Main</mainClass>
+                  <mainClass>kwee.mailSender.main.Main</mainClass>
                 </manifest>
               </archive>
               <descriptorRefs>
@@ -300,7 +300,7 @@
                <outfile>${project.build.directory}/mailsender.exe</outfile>
                <downloadUrl>${downloadUrl.jre}</downloadUrl>
                <classPath>
-                 <mainClass>main.Main</mainClass>
+                 <mainClass>kwee.mailSender.main.Main</mainClass>
               </classPath>
               <jre>
 	            <path>%java_home%</path>
